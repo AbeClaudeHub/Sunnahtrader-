@@ -24,6 +24,7 @@ function navigate(to: Route) {
 }
 
 function hasAccess(): boolean {
+  return true; // pre-release: gate off — remove this line before launch
   const params = new URLSearchParams(location.search);
   if (params.get('access') === 'granted') {
     if (!getState().access) setState({ access: true });
