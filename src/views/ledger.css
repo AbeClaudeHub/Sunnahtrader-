@@ -1,0 +1,95 @@
+/* the daily ledger — a page of the book. one screen, one job */
+
+.ledger { padding-bottom: var(--s-40); }
+
+.ledger-dateline { margin-top: var(--s-8); }
+.ledger-day {
+  font-family: var(--display);
+  font-size: var(--t-34);
+  font-variation-settings: 'opsz' 60;
+  font-weight: 540;
+  line-height: 1.1;
+}
+.ledger-datesub {
+  font-size: var(--t-11);
+  letter-spacing: 0.08em;
+  color: var(--ink-60);
+  margin-top: var(--s-4);
+}
+
+.ledger-debts {
+  margin-top: var(--s-16);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-8);
+}
+
+.ledger-section { margin-top: var(--s-40); }
+
+.ledger-intention {
+  font-family: var(--display);
+  font-style: italic;
+  font-size: var(--t-24);
+  font-variation-settings: 'opsz' 30;
+  font-weight: 440;
+  line-height: 1.3;
+  padding: var(--s-16) 0 var(--s-8);
+  border-bottom: var(--rule) solid var(--ink);
+}
+
+.ledger-pending {
+  padding: var(--s-16) 0;
+  font-size: var(--t-13);
+  color: var(--ink-60);
+  border-bottom: var(--rule) solid var(--ink);
+}
+
+.ledger-wax { color: var(--wax); font-weight: 600; }
+
+.composed {
+  margin-top: var(--s-16);
+  border: var(--border) solid var(--ink);
+}
+.composed-body {
+  padding: var(--s-16);
+  font-family: var(--mono);
+  font-size: var(--t-13);
+  line-height: 1.6;
+  white-space: pre-line;
+}
+.composed-copy { border: none; border-top: var(--rule) solid var(--ink); }
+
+.entry-form { margin-top: var(--s-8); }
+.entry-form-pair { display: flex; gap: var(--s-24); }
+.entry-form-pair .field { flex: 1; }
+.entry-save { margin-top: var(--s-24); }
+.entry-edit {
+  margin-top: var(--s-16);
+  color: var(--ink-60);
+  border-bottom: var(--rule) solid var(--ink-45);
+  padding-bottom: 2px;
+}
+
+.entry-yn { display: flex; gap: var(--s-8); padding-top: var(--s-4); }
+.entry-yn-btn {
+  flex: 1;
+  padding: var(--s-8);
+  border: var(--rule) solid var(--ink-45);
+  font-size: var(--t-13);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.entry-yn-on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.entry-yn-wax { background: var(--wax); color: var(--paper); border-color: var(--wax); }
+
+.entry-rules { display: flex; flex-direction: column; padding-top: var(--s-4); }
+.entry-rule {
+  text-align: left;
+  padding: var(--s-8) 0;
+  border-bottom: var(--rule) solid var(--ink-35);
+  font-size: var(--t-13);
+}
+.entry-rule .num { color: var(--ink-60); margin-right: var(--s-4); }
+.entry-rule-broken { color: var(--wax); font-weight: 600; }
+.entry-rule-broken .num { color: var(--wax); }

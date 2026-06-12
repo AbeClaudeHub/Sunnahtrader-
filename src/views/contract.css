@@ -1,0 +1,185 @@
+/* the contract — engraved stationery on paper */
+
+.contract-masthead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-bottom: var(--s-8);
+  border-bottom: var(--rule) solid var(--ink);
+}
+.contract-masthead .label { color: var(--ink-60); }
+.contract-masthead .num { font-size: var(--t-11); color: var(--ink-60); }
+
+.contract-lede {
+  margin-top: var(--s-16);
+  font-family: var(--display);
+  font-size: var(--t-18);
+  font-variation-settings: 'opsz' 18;
+  line-height: 1.45;
+}
+
+.slot {
+  margin-top: var(--s-24);
+  border: var(--rule) solid var(--ink);
+  padding: var(--s-16);
+}
+.slot-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-8);
+  border-bottom: var(--rule) solid var(--ink);
+  padding-bottom: var(--s-8);
+}
+.slot-no { font-size: var(--t-13); color: var(--ink-60); }
+.slot-title {
+  font-family: var(--display);
+  font-size: var(--t-24);
+  font-variation-settings: 'opsz' 30;
+  font-weight: 520;
+  flex: 1;
+}
+.slot-title-input {
+  flex: 1;
+  font-family: var(--display);
+  font-size: var(--t-24);
+  font-variation-settings: 'opsz' 30;
+  font-weight: 520;
+  border-bottom: var(--rule) solid var(--ink-45);
+}
+.slot-action { color: var(--ink-60); border-bottom: var(--rule) solid var(--ink-45); padding-bottom: 2px; }
+
+.slot-body { margin-top: var(--s-8); font-size: var(--t-13); line-height: 1.6; }
+.slot-body p { padding: var(--s-4) 0; border-bottom: var(--rule) solid var(--ink-35); }
+.slot-body p:last-child { border-bottom: none; }
+.slot-k {
+  font-size: var(--t-11);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-60);
+  margin-right: var(--s-4);
+}
+.slot-price .slot-k { color: var(--ink); }
+
+.slot-fields { margin-top: var(--s-8); }
+
+.slot-swap {
+  margin-top: var(--s-16);
+  display: flex;
+  align-items: center;
+  gap: var(--s-8);
+}
+.slot-swap-label { color: var(--ink-60); }
+.slot-swap select {
+  flex: 1;
+  font-size: var(--t-13);
+  padding: var(--s-4) 0;
+  border-bottom: var(--rule) solid var(--ink-45);
+  background: transparent;
+  appearance: none;
+}
+
+.contract-stakes { margin-top: var(--s-40); }
+.contract-sign { margin-top: var(--s-40); }
+.contract-incomplete {
+  margin-top: var(--s-8);
+  font-size: var(--t-13);
+  color: var(--ink-60);
+  text-align: center;
+}
+
+/* the signed document */
+.contract-doc {
+  border: var(--border) solid var(--ink);
+  outline: var(--rule) solid var(--ink);
+  outline-offset: 4px;
+  padding: var(--s-24) var(--s-16);
+  margin-top: var(--s-4);
+}
+.contract-doc-version { text-align: center; color: var(--ink-60); }
+.contract-doc-title {
+  margin-top: var(--s-8);
+  text-align: center;
+  font-family: var(--display);
+  font-size: var(--t-34);
+  font-variation-settings: 'opsz' 60;
+  font-weight: 560;
+  line-height: 1.15;
+}
+
+.doc-rule { margin-top: var(--s-24); font-size: var(--t-13); line-height: 1.55; }
+.doc-rule p { padding: 3px 0; border-bottom: var(--rule) solid var(--ink-35); }
+.doc-rule-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-8);
+  border-bottom: var(--rule) solid var(--ink);
+  padding-bottom: var(--s-4);
+  margin-bottom: var(--s-4);
+}
+.doc-rule-no { font-size: var(--t-13); color: var(--ink-60); }
+.doc-rule-title {
+  font-family: var(--display);
+  font-size: var(--t-18);
+  font-variation-settings: 'opsz' 24;
+  font-weight: 540;
+}
+
+.doc-signature {
+  margin-top: var(--s-40);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: var(--s-16);
+}
+.doc-signed-name {
+  font-family: var(--display);
+  font-style: italic;
+  font-size: var(--t-24);
+  font-variation-settings: 'opsz' 30;
+  border-bottom: var(--rule) solid var(--ink);
+  padding-bottom: var(--s-4);
+  min-width: 160px;
+}
+.doc-signed-date {
+  margin-top: var(--s-8);
+  font-size: var(--t-11);
+  color: var(--ink-60);
+}
+
+/* the seal stamps once: 400ms scale-and-settle */
+.seal-stamping { animation: seal-stamp 400ms cubic-bezier(0.2, 0.9, 0.3, 1.15); }
+@keyframes seal-stamp {
+  0% { transform: scale(1.6); opacity: 0; }
+  60% { transform: scale(0.97); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.contract-doc-actions {
+  margin-top: var(--s-16);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-8);
+}
+.contract-history {
+  margin-top: var(--s-16);
+  font-size: var(--t-11);
+  color: var(--ink-60);
+  text-align: center;
+}
+
+.contract-empty {
+  min-height: 50vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.contract-empty-line {
+  font-family: var(--display);
+  font-size: var(--t-34);
+  font-variation-settings: 'opsz' 60;
+  font-weight: 520;
+  line-height: 1.15;
+}
+.contract-empty-sub { margin-top: var(--s-16); color: var(--ink-60); }
+.contract-empty .btn { margin-top: var(--s-24); }
