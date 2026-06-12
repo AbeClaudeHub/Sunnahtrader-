@@ -1,5 +1,5 @@
-import type { Breach, LedgerState } from '../store/types';
-import { marketDaysBetween, todayISO, toISODate } from './dates';
+import type { Breach, ContractVersion, LedgerState } from '../store/types';
+import { calendarDaysBetween, marketDaysBetween, todayISO, toISODate, weekRangeLabel } from './dates';
 
 export function contractStartISO(state: LedgerState): string | null {
   const c = state.contract;
@@ -14,8 +14,20 @@ export function daysUnderContract(state: LedgerState, onISO?: string): number {
   if (!start) return 0;
   const end = onISO ?? todayISO();
   if (end < start) return 0;
-  const ms = new Date(end + 'T00:00:00').getTime() - new Date(start + 'T00:00:00').getTime();
-  return Math.floor(ms / 86400000) + 1;
+  return calendarDaysBetween(start, end) + 1;
+}
+
+/** the contract version that governed a given day — the latest one signed on or before it */
+export function versionInForceOn(state: LedgerState, iso: string): ContractVersion | null {
+  const c = state.contract;
+  if (!c) return null;
+  const versions = [...c.history, c.current];
+  let governing: ContractVersion | null = null;
+  for (const v of versions) {
+    if (v.signedAt.slice(0, 10) <= iso) governing = v;
+  }
+  // a day before the first signing is judged under the first version
+  return governing ?? versions[0];
 }
 
 /** market days from signing through today with no entry at all */
@@ -30,15 +42,23 @@ export function missedDays(state: LedgerState): string[] {
   });
 }
 
-/** integrity = rule-days kept ÷ rule-days judged, over evenings logged. 0–100, one decimal */
+/**
+ * integrity = rule-days kept ÷ rule-days judged, over evenings logged. 0–100, one decimal.
+ * each evening is judged against the contract version in force on its own date,
+ * so amending the contract never rewrites how past days were scored.
+ */
 export function integrityScore(state: LedgerState): number | null {
-  const c = state.contract;
-  if (!c) return null;
-  const ruleCount = c.current.rules.length;
+  if (!state.contract) return null;
   const evenings = Object.values(state.days).filter((d) => d.evening);
-  if (evenings.length === 0 || ruleCount === 0) return null;
-  const total = evenings.length * ruleCount;
-  const broken = evenings.reduce((n, d) => n + (d.evening?.breachedRuleIds.length ?? 0), 0);
+  let total = 0;
+  let broken = 0;
+  for (const d of evenings) {
+    const ruleCount = versionInForceOn(state, d.date)?.rules.length ?? 0;
+    if (ruleCount === 0) continue;
+    total += ruleCount;
+    broken += d.evening!.breachedRuleIds.length;
+  }
+  if (total === 0) return null;
   return Math.round(((total - broken) / total) * 1000) / 10;
 }
 
@@ -90,9 +110,16 @@ export function moneySaved(state: LedgerState): SavedEstimate | null {
   };
 }
 
+export interface DayMark {
+  iso: string;
+  logged: boolean;
+  breached: boolean;
+}
+
 export interface WeekSummary {
   fridayISO: string;
   rangeLabel: string;
+  dayMarks: DayMark[]; // Monday..Friday
   daysLogged: number;
   marketDays: number;
   tradesTotal: number;
@@ -119,22 +146,33 @@ export function weekSummary(state: LedgerState, anchor: Date): WeekSummary {
   const days = week.map((iso) => state.days[iso]).filter(Boolean);
   const evenings = days.filter((d) => d?.evening);
   const breaches = state.breaches.filter((b) => week.includes(b.date));
+  const breachDates = new Set(breaches.map((b) => b.date));
   const ruleCount = state.contract?.current.rules.length ?? 0;
   const breachedRuleIds = new Set(breaches.map((b) => b.ruleId));
 
-  let integrity: number | null = null;
-  if (evenings.length > 0 && ruleCount > 0) {
-    const total = evenings.length * ruleCount;
-    const broken = evenings.reduce((n, d) => n + (d!.evening!.breachedRuleIds.length ?? 0), 0);
-    integrity = Math.round(((total - broken) / total) * 1000) / 10;
+  let total = 0;
+  let broken = 0;
+  for (const d of evenings) {
+    const n = versionInForceOn(state, d!.date)?.rules.length ?? 0;
+    if (n === 0) continue;
+    total += n;
+    broken += d!.evening!.breachedRuleIds.length;
   }
+  const integrity = total > 0 ? Math.round(((total - broken) / total) * 1000) / 10 : null;
 
-  const first = week[0].slice(5).split('-').reverse().join('.');
-  const last = week[4].slice(5).split('-').reverse().join('.');
+  const dayMarks: DayMark[] = week.map((iso) => {
+    const d = state.days[iso];
+    return {
+      iso,
+      logged: !!(d && (d.morning || d.evening)),
+      breached: breachDates.has(iso),
+    };
+  });
 
   return {
     fridayISO: week[4],
-    rangeLabel: `${first} — ${last}`,
+    rangeLabel: weekRangeLabel(week[0], week[4]),
+    dayMarks,
     daysLogged: evenings.length,
     marketDays: 5,
     tradesTotal: evenings.reduce((n, d) => n + (d!.evening!.trades ?? 0), 0),

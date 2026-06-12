@@ -14,6 +14,13 @@ export function fromISO(iso: string): Date {
   return new Date(y, m - 1, d);
 }
 
+/** whole calendar days from `fromIso` to `toIso` — UTC arithmetic, immune to DST */
+export function calendarDaysBetween(fromIso: string, toIso: string): number {
+  const [y1, m1, d1] = fromIso.split('-').map(Number);
+  const [y2, m2, d2] = toIso.split('-').map(Number);
+  return Math.round((Date.UTC(y2, m2 - 1, d2) - Date.UTC(y1, m1 - 1, d1)) / 86400000);
+}
+
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -84,6 +91,19 @@ export function weekMarketDays(d: Date): string[] {
     out.push(toISODate(day));
   }
   return out;
+}
+
+/** "8–12 JUNE" within one month, "29 JUN – 3 JUL" across months; year optional */
+export function weekRangeLabel(mondayIso: string, fridayIso: string, withYear = false): string {
+  const a = fromISO(mondayIso);
+  const b = fromISO(fridayIso);
+  const year = withYear ? ` ${b.getFullYear()}` : '';
+  if (a.getMonth() === b.getMonth()) {
+    return `${a.getDate()}–${b.getDate()} ${MONTHS[b.getMonth()].toUpperCase()}${year}`;
+  }
+  const am = MONTHS[a.getMonth()].slice(0, 3).toUpperCase();
+  const bm = MONTHS[b.getMonth()].slice(0, 3).toUpperCase();
+  return `${a.getDate()} ${am} – ${b.getDate()} ${bm}${year}`;
 }
 
 /** thin-space thousands: 12 500 */

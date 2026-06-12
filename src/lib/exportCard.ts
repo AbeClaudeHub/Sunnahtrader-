@@ -1,6 +1,10 @@
+// the three export cards — engraved certificates, drawn by hand on canvas.
+// 1080×1350 (4:5), the four colors only, measured layout: nothing may collide,
+// nothing may orphan. these are the artifacts people post into rooms.
+
 import type { LedgerState } from '../store/types';
 import { SABOTEUR_NAMES } from '../content/profiles';
-import { longDate, formatMoney } from './dates';
+import { longDate, formatMoney, weekRangeLabel } from './dates';
 import { integrityScore, daysUnderContract, type WeekSummary } from './stats';
 
 const INK = '#0F0D09';
@@ -9,13 +13,20 @@ const GOLD = '#C2A14D';
 const WAX = '#7A2E1F';
 const W = 1080;
 const H = 1350;
+const MX = 120; // content margin
+const CW = W - MX * 2; // content width
+
+const paperA = (a: number) => `rgba(240,233,219,${a})`;
+const inkA = (a: number) => `rgba(15,13,9,${a})`;
 
 async function readyCanvas(): Promise<CanvasRenderingContext2D> {
   await document.fonts.ready;
   await Promise.all([
-    document.fonts.load('560 240px Fraunces'),
+    document.fonts.load('560 230px Fraunces'),
     document.fonts.load('italic 400 44px Fraunces'),
+    document.fonts.load('italic 460 52px Fraunces'),
     document.fonts.load('500 28px Inter'),
+    document.fonts.load('600 30px Inter'),
   ]);
   const canvas = document.createElement('canvas');
   canvas.width = W;
@@ -31,6 +42,68 @@ function seededRand(seed: number): () => number {
     s = (s * 16807) % 2147483647;
     return (s - 1) / 2147483646;
   };
+}
+
+/** real tracking where the browser supports it; silently nothing where it doesn't */
+function track(ctx: CanvasRenderingContext2D, px: number) {
+  try {
+    (ctx as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing = `${px}px`;
+  } catch {
+    // older engines: untracked text is acceptable
+  }
+}
+
+/** the paper itself — seeded grain, the single texture, same 5% as the app */
+function grain(ctx: CanvasRenderingContext2D, onInk: boolean) {
+  const rand = seededRand(97);
+  const size = 180;
+  const tile = document.createElement('canvas');
+  tile.width = size;
+  tile.height = size;
+  const tctx = tile.getContext('2d');
+  if (!tctx) return;
+  const img = tctx.createImageData(size, size);
+  const [r, g, b] = onInk ? [240, 233, 219] : [15, 13, 9];
+  for (let i = 0; i < img.data.length; i += 4) {
+    img.data[i] = r;
+    img.data[i + 1] = g;
+    img.data[i + 2] = b;
+    img.data[i + 3] = Math.floor(rand() * 36); // ≤14% per speck, most far lower
+  }
+  tctx.putImageData(img, 0, 0);
+  const pattern = ctx.createPattern(tile, 'repeat');
+  if (!pattern) return;
+  ctx.save();
+  ctx.globalAlpha = 0.35;
+  ctx.fillStyle = pattern;
+  ctx.fillRect(0, 0, W, H);
+  ctx.restore();
+}
+
+/** the engraved plate border — heavy outer rule, hairline inner */
+function plate(ctx: CanvasRenderingContext2D, onInk: boolean) {
+  ctx.strokeStyle = onInk ? paperA(0.55) : INK;
+  ctx.lineWidth = onInk ? 2 : 3;
+  ctx.strokeRect(44, 44, W - 88, H - 88);
+  ctx.strokeStyle = onInk ? paperA(0.3) : inkA(0.55);
+  ctx.lineWidth = 1;
+  ctx.strokeRect(58, 58, W - 116, H - 116);
+}
+
+function rule(
+  ctx: CanvasRenderingContext2D,
+  x1: number,
+  x2: number,
+  y: number,
+  color: string,
+  width = 1
+) {
+  ctx.strokeStyle = color;
+  ctx.lineWidth = width;
+  ctx.beginPath();
+  ctx.moveTo(x1, y);
+  ctx.lineTo(x2, y);
+  ctx.stroke();
 }
 
 function tremorLine(
@@ -51,20 +124,37 @@ function tremorLine(
   ctx.stroke();
 }
 
+/** masthead: tracked label left, dated mono right, ruled beneath */
+function masthead(ctx: CanvasRenderingContext2D, onInk: boolean, left: string, right: string) {
+  ctx.textAlign = 'left';
+  ctx.fillStyle = onInk ? paperA(0.6) : inkA(0.6);
+  ctx.font = '500 26px Inter';
+  track(ctx, 3.6);
+  ctx.fillText(left, MX, 150);
+  track(ctx, 0);
+  if (right) {
+    ctx.fillStyle = onInk ? paperA(0.5) : inkA(0.55);
+    ctx.font = '400 24px ui-monospace, Menlo, monospace';
+    ctx.textAlign = 'right';
+    track(ctx, 1.5);
+    ctx.fillText(right, W - MX, 150);
+    track(ctx, 0);
+    ctx.textAlign = 'left';
+  }
+  rule(ctx, MX, W - MX, 178, onInk ? paperA(0.35) : inkA(0.4));
+}
+
 function footer(ctx: CanvasRenderingContext2D, onInk: boolean) {
-  ctx.strokeStyle = onInk ? 'rgba(240,233,219,0.4)' : 'rgba(15,13,9,0.4)';
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(96, H - 110);
-  ctx.lineTo(W - 96, H - 110);
-  ctx.stroke();
-  ctx.fillStyle = onInk ? 'rgba(240,233,219,0.7)' : 'rgba(15,13,9,0.7)';
+  rule(ctx, MX, W - MX, H - 128, onInk ? paperA(0.35) : inkA(0.4));
+  ctx.fillStyle = onInk ? paperA(0.7) : inkA(0.7);
   ctx.font = '500 26px Inter';
   ctx.textAlign = 'left';
-  ctx.fillText('THE LEDGER', 96, H - 64);
+  track(ctx, 3.6);
+  ctx.fillText('THE LEDGER', MX, H - 80);
   ctx.fillStyle = GOLD;
   ctx.textAlign = 'right';
-  ctx.fillText('NIYYAH', W - 96, H - 64);
+  ctx.fillText('NIYYAH', W - MX, H - 80);
+  track(ctx, 0);
   ctx.textAlign = 'left';
 }
 
@@ -80,6 +170,8 @@ function download(ctx: CanvasRenderingContext2D, filename: string) {
   }, 'image/png');
 }
 
+// ---------------------------------------------------------------- verdict
+
 export async function exportVerdictCard(state: LedgerState): Promise<void> {
   const audit = state.audit;
   if (!audit) return;
@@ -87,105 +179,132 @@ export async function exportVerdictCard(state: LedgerState): Promise<void> {
 
   ctx.fillStyle = INK;
   ctx.fillRect(0, 0, W, H);
+  grain(ctx, true);
+  plate(ctx, true);
 
-  // masthead
-  ctx.fillStyle = 'rgba(240,233,219,0.6)';
-  ctx.font = '500 26px Inter';
-  ctx.fillText('T H E   A U D I T  —  V E R D I C T', 96, 124);
-  ctx.strokeStyle = 'rgba(240,233,219,0.35)';
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(96, 152);
-  ctx.lineTo(W - 96, 152);
-  ctx.stroke();
+  masthead(ctx, true, 'THE AUDIT — VERDICT', longDate(new Date(audit.completedAt)));
 
-  // preline + name
-  ctx.fillStyle = 'rgba(240,233,219,0.75)';
+  // preline + the name, engraved large
+  ctx.fillStyle = paperA(0.75);
   ctx.font = 'italic 400 44px Fraunces';
-  ctx.fillText('The ledger has read you.', 96, 300);
+  ctx.fillText('The ledger has read you.', MX, 330);
 
   ctx.fillStyle = PAPER;
-  ctx.font = '560 235px Fraunces';
-  ctx.fillText(SABOTEUR_NAMES[audit.dominant], 88, 540);
+  ctx.font = '560 230px Fraunces';
+  // display caps hang a shade left of the measure — optical, not arithmetic
+  ctx.fillText(SABOTEUR_NAMES[audit.dominant], MX - 8, 562);
 
-  ctx.fillStyle = 'rgba(240,233,219,0.6)';
   ctx.font = '500 26px Inter';
-  ctx.fillText(
-    `DOMINANT SABOTEUR  ·  SECONDED BY ${SABOTEUR_NAMES[audit.seconded]}`,
-    96,
-    620
-  );
+  track(ctx, 3.6);
+  ctx.fillStyle = paperA(0.6);
+  const sub = 'DOMINANT SABOTEUR · SECONDED BY ';
+  ctx.fillText(sub, MX, 642);
+  const subW = ctx.measureText(sub).width;
+  ctx.fillStyle = GOLD;
+  ctx.fillText(SABOTEUR_NAMES[audit.seconded], MX + subW, 642);
+  track(ctx, 0);
 
-  // gauges — one tremor line per point scored
+  // gauges — one tremor line per point scored, resting on a ruled baseline
   const rand = seededRand(7);
   const order = ['ego', 'greed', 'anger', 'doubt'] as const;
-  const colW = (W - 192) / 4;
-  const baseY = 1010;
+  const colW = CW / 4;
+  const baseY = 1044;
   const step = 22;
-  const lineW = 140;
+  const lineW = 150;
 
   order.forEach((s, i) => {
-    const cx = 96 + colW * i + colW / 2;
+    const cx = MX + colW * i + colW / 2;
     const score = audit.scores[s];
     const dominant = s === audit.dominant;
 
-    ctx.fillStyle = dominant ? GOLD : 'rgba(240,233,219,0.65)';
+    ctx.fillStyle = dominant ? GOLD : paperA(0.6);
     ctx.font = '400 34px ui-monospace, Menlo, monospace';
     ctx.textAlign = 'center';
-    ctx.fillText(String(score), cx, baseY - score * step - 26);
+    ctx.fillText(String(score), cx, baseY - score * step - 28);
 
-    ctx.strokeStyle = dominant ? PAPER : 'rgba(240,233,219,0.55)';
+    ctx.strokeStyle = dominant ? PAPER : paperA(0.5);
     ctx.lineWidth = 3.5;
     ctx.lineCap = 'round';
     for (let p = 1; p <= score; p++) {
       tremorLine(ctx, cx - lineW / 2, cx + lineW / 2, baseY - p * step, 2.6, rand);
     }
 
-    ctx.fillStyle = dominant ? PAPER : 'rgba(240,233,219,0.55)';
+    ctx.fillStyle = dominant ? PAPER : paperA(0.5);
     ctx.font = '500 28px Inter';
-    ctx.fillText(SABOTEUR_NAMES[s], cx, baseY + 52);
+    track(ctx, 3.2);
+    ctx.fillText(SABOTEUR_NAMES[s], cx, baseY + 56);
+    track(ctx, 0);
   });
   ctx.textAlign = 'left';
 
-  ctx.strokeStyle = 'rgba(240,233,219,0.45)';
+  // the baseline, with engraver's end ticks
+  ctx.lineCap = 'butt';
+  rule(ctx, MX, W - MX, baseY, paperA(0.45));
+  ctx.strokeStyle = paperA(0.45);
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(96, baseY);
-  ctx.lineTo(W - 96, baseY);
+  ctx.moveTo(MX, baseY - 7);
+  ctx.lineTo(MX, baseY + 7);
+  ctx.moveTo(W - MX, baseY - 7);
+  ctx.lineTo(W - MX, baseY + 7);
   ctx.stroke();
-
-  // dated
-  ctx.fillStyle = 'rgba(240,233,219,0.5)';
-  ctx.font = '400 26px ui-monospace, Menlo, monospace';
-  ctx.fillText(longDate(new Date(audit.completedAt)), 96, 1130);
 
   footer(ctx, true);
   download(ctx, `the-ledger-verdict-${audit.dominant}.png`);
 }
 
-function wrapText(
+// ---------------------------------------------------------------- contract
+
+interface Run {
+  text: string;
+  k?: boolean; // a small-caps keyword run
+}
+
+/**
+ * wraps mixed keyword/body runs at word boundaries inside a width.
+ * when draw=false it only measures. returns the y after the last line.
+ */
+function richWrap(
   ctx: CanvasRenderingContext2D,
-  text: string,
+  runs: Run[],
   x: number,
   y: number,
   maxWidth: number,
-  lineHeight: number
+  s: number,
+  draw: boolean
 ): number {
-  const words = text.split(' ');
-  let line = '';
+  const bodyFont = `400 ${Math.round(25 * s)}px Inter`;
+  const kFont = `600 ${Math.round(20 * s)}px Inter`;
+  const leading = 33 * s;
+  let cx = x;
   let cy = y;
-  for (const word of words) {
-    const test = line ? line + ' ' + word : word;
-    if (ctx.measureText(test).width > maxWidth && line) {
-      ctx.fillText(line, x, cy);
-      line = word;
-      cy += lineHeight;
-    } else {
-      line = test;
+  for (const run of runs) {
+    const words = run.text.split(/\s+/).filter(Boolean);
+    ctx.font = run.k ? kFont : bodyFont;
+    if (run.k) track(ctx, 1.6 * s);
+    for (const word of words) {
+      const piece = cx === x ? word : ' ' + word;
+      const w = ctx.measureText(piece).width;
+      if (cx + w > x + maxWidth && cx > x) {
+        cy += leading;
+        cx = x;
+        const w2 = ctx.measureText(word).width;
+        if (draw) {
+          ctx.fillStyle = run.k ? inkA(0.55) : inkA(0.82);
+          ctx.fillText(word, cx, cy);
+        }
+        cx += w2;
+      } else {
+        if (draw) {
+          ctx.fillStyle = run.k ? inkA(0.55) : inkA(0.82);
+          ctx.fillText(piece, cx, cy);
+        }
+        cx += w;
+      }
     }
+    if (run.k) track(ctx, 0);
   }
-  if (line) ctx.fillText(line, x, cy);
-  return cy + lineHeight;
+  return cy;
 }
 
 function drawSeal(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
@@ -205,7 +324,7 @@ function drawSeal(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: numb
   ctx.closePath();
   ctx.fill();
   // inner ring + monogram
-  ctx.strokeStyle = 'rgba(240,233,219,0.85)';
+  ctx.strokeStyle = paperA(0.85);
   ctx.lineWidth = 2.5;
   ctx.beginPath();
   ctx.arc(cx, cy, r * 0.62, 0, Math.PI * 2);
@@ -226,138 +345,243 @@ export async function exportContractDoc(state: LedgerState): Promise<void> {
 
   ctx.fillStyle = PAPER;
   ctx.fillRect(0, 0, W, H);
-  // engraved double border
-  ctx.strokeStyle = INK;
-  ctx.lineWidth = 3;
-  ctx.strokeRect(40, 40, W - 80, H - 80);
-  ctx.lineWidth = 1;
-  ctx.strokeRect(56, 56, W - 112, H - 112);
+  grain(ctx, false);
+  plate(ctx, false);
 
-  ctx.fillStyle = 'rgba(15,13,9,0.6)';
+  ctx.fillStyle = inkA(0.6);
   ctx.font = '500 24px Inter';
   ctx.textAlign = 'center';
-  ctx.fillText(`T H E   C O N T R A C T   ·   V ${c.current.version}`, W / 2, 140);
+  track(ctx, 3.4);
+  ctx.fillText(`THE CONTRACT · V${c.current.version}`, W / 2, 142);
+  track(ctx, 0);
 
   ctx.fillStyle = INK;
-  ctx.font = '560 84px Fraunces';
-  ctx.fillText('Five Rules. No Exceptions.', W / 2, 240);
+  ctx.font = '560 72px Fraunces';
+  ctx.fillText('Five Rules. No Exceptions.', W / 2, 238);
   ctx.textAlign = 'left';
 
-  let y = 330;
-  c.current.rules.forEach((r, i) => {
-    ctx.fillStyle = 'rgba(15,13,9,0.55)';
-    ctx.font = '400 26px ui-monospace, Menlo, monospace';
-    ctx.fillText(String(i + 1).padStart(2, '0'), 96, y);
-    ctx.fillStyle = INK;
-    ctx.font = '560 40px Fraunces';
-    ctx.fillText(r.title, 160, y);
-    y += 46;
-    ctx.fillStyle = 'rgba(15,13,9,0.85)';
-    ctx.font = '400 27px Inter';
-    y = wrapText(ctx, `WHEN ${r.when}  THEN ${r.then}`, 160, y, W - 280, 36) + 2;
-    y = wrapText(ctx, `NO EXCEPTIONS, INCLUDING ${r.noExceptions}  ·  THE PRICE ${r.price}`, 160, y, W - 280, 36);
-    ctx.strokeStyle = 'rgba(15,13,9,0.4)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(96, y);
-    ctx.lineTo(W - 96, y);
-    ctx.stroke();
-    y += 44;
-  });
+  // the rules must fit between the title and the signature — measure, then
+  // step the scale down until they do. the signature block is reserved ground.
+  const top = 312;
+  const sigTop = H - 264;
+  const bodyX = 176;
+  const bodyW = W - MX - bodyX;
 
-  // signature block
-  const sy = H - 220;
+  const layout = (s: number, draw: boolean): number => {
+    let y = top;
+    c.current.rules.forEach((r, i) => {
+      if (draw) {
+        ctx.fillStyle = inkA(0.5);
+        ctx.font = `400 ${Math.round(24 * s)}px ui-monospace, Menlo, monospace`;
+        ctx.fillText(String(i + 1).padStart(2, '0'), MX, y);
+        ctx.fillStyle = INK;
+        ctx.font = `560 ${Math.round(36 * s)}px Fraunces`;
+        ctx.fillText(r.title, bodyX, y);
+      }
+      y += 44 * s;
+      y = richWrap(
+        ctx,
+        [
+          { text: 'WHEN', k: true },
+          { text: r.when },
+          { text: ' THEN', k: true },
+          { text: r.then },
+        ],
+        bodyX,
+        y,
+        bodyW,
+        s,
+        draw
+      );
+      y += 33 * s;
+      y = richWrap(
+        ctx,
+        [
+          { text: 'NO EXCEPTIONS, INCLUDING', k: true },
+          { text: r.noExceptions },
+          { text: ' THE PRICE', k: true },
+          { text: r.price },
+        ],
+        bodyX,
+        y,
+        bodyW,
+        s,
+        draw
+      );
+      y += 22 * s;
+      if (i < c.current.rules.length - 1) {
+        if (draw) rule(ctx, MX, W - MX, y, inkA(0.3));
+        y += 42 * s;
+      }
+    });
+    return y;
+  };
+
+  let scale = 1;
+  while (scale > 0.66 && layout(scale, false) > sigTop - 24) scale -= 0.02;
+  layout(scale, true);
+
+  // signature ground
+  rule(ctx, MX, W - MX, sigTop, inkA(0.4));
+  const sy = sigTop + 102;
   ctx.fillStyle = INK;
-  ctx.font = 'italic 460 54px Fraunces';
-  ctx.fillText(c.current.signedName, 120, sy);
-  ctx.strokeStyle = INK;
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(120, sy + 18);
-  ctx.lineTo(560, sy + 18);
-  ctx.stroke();
-  ctx.fillStyle = 'rgba(15,13,9,0.6)';
-  ctx.font = '400 24px ui-monospace, Menlo, monospace';
-  ctx.fillText(`SIGNED ${longDate(new Date(c.current.signedAt))}`, 120, sy + 58);
+  ctx.font = 'italic 460 52px Fraunces';
+  ctx.fillText(c.current.signedName, 144, sy);
+  rule(ctx, 144, 600, sy + 18, INK);
+  ctx.fillStyle = inkA(0.6);
+  ctx.font = '400 23px ui-monospace, Menlo, monospace';
+  track(ctx, 1.5);
+  ctx.fillText(`SIGNED ${longDate(new Date(c.current.signedAt))}`, 144, sy + 58);
+  track(ctx, 0);
 
-  drawSeal(ctx, W - 230, sy - 10, 92);
+  drawSeal(ctx, W - 236, sigTop + 96, 82);
 
   download(ctx, `the-ledger-contract-v${c.current.version}.png`);
 }
+
+// ---------------------------------------------------------------- weekly
 
 export async function exportWeeklyCard(state: LedgerState, week: WeekSummary): Promise<void> {
   const ctx = await readyCanvas();
 
   ctx.fillStyle = INK;
   ctx.fillRect(0, 0, W, H);
+  grain(ctx, true);
+  plate(ctx, true);
 
-  ctx.fillStyle = 'rgba(240,233,219,0.6)';
-  ctx.font = '500 26px Inter';
-  ctx.fillText('T H E   W E E K L Y   L E D G E R', 96, 124);
-  ctx.fillStyle = 'rgba(240,233,219,0.6)';
-  ctx.font = '400 26px ui-monospace, Menlo, monospace';
-  ctx.textAlign = 'right';
-  ctx.fillText(week.rangeLabel, W - 96, 124);
-  ctx.textAlign = 'left';
-  ctx.strokeStyle = 'rgba(240,233,219,0.35)';
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(96, 152);
-  ctx.lineTo(W - 96, 152);
-  ctx.stroke();
+  const monday = week.dayMarks[0]?.iso ?? week.fridayISO;
+  masthead(ctx, true, 'THE WEEKLY LEDGER', weekRangeLabel(monday, week.fridayISO, true));
 
   // hero: integrity
   ctx.fillStyle = PAPER;
-  ctx.font = '560 250px Fraunces';
+  ctx.font = '560 210px Fraunces';
   const integ = week.integrity != null ? week.integrity.toFixed(1) : '—';
-  ctx.fillText(integ, 88, 460);
-  ctx.fillStyle = 'rgba(240,233,219,0.6)';
+  ctx.fillText(integ, MX - 6, 442);
+  ctx.fillStyle = paperA(0.6);
   ctx.font = '500 28px Inter';
-  ctx.fillText('INTEGRITY / 100', 96, 530);
+  track(ctx, 3.6);
+  ctx.fillText('INTEGRITY / 100', MX, 506);
+  track(ctx, 0);
+
+  // the week, as ledger ticks: kept, breached (wax, taller), or gap
+  const strip = { baseY: 628, gap: 100, x0: MX + 14 };
+  const letters = ['M', 'T', 'W', 'T', 'F'];
+  rule(ctx, MX, strip.x0 + strip.gap * 4 + 14, strip.baseY, paperA(0.45));
+  week.dayMarks.forEach((m, i) => {
+    const x = strip.x0 + strip.gap * i;
+    if (m.logged) {
+      ctx.strokeStyle = m.breached ? WAX : PAPER;
+      ctx.lineWidth = m.breached ? 5 : 3.5;
+      ctx.beginPath();
+      ctx.moveTo(x, strip.baseY);
+      ctx.lineTo(x, strip.baseY - (m.breached ? 52 : 36));
+      ctx.stroke();
+    }
+    ctx.fillStyle = paperA(0.45);
+    ctx.font = '400 22px ui-monospace, Menlo, monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(letters[i], x, strip.baseY + 40);
+    ctx.textAlign = 'left';
+  });
+
+  // the week's last honest line — the human voice on the certificate
+  const honest = [...week.dayMarks]
+    .reverse()
+    .map((m) => state.days[m.iso]?.evening?.honestLine)
+    .find((l) => l && l.trim().length > 0);
+  if (honest) {
+    ctx.fillStyle = paperA(0.85);
+    ctx.font = 'italic 400 40px Fraunces';
+    const quoted = `“${honest}”`;
+    // wrap to at most two lines
+    const words = quoted.split(' ');
+    let line = '';
+    let cy = 742;
+    let lines = 0;
+    for (const word of words) {
+      const test = line ? line + ' ' + word : word;
+      if (ctx.measureText(test).width > CW && line) {
+        if (lines === 1) {
+          // second line full: end it with an ellipsis
+          while (ctx.measureText(line + '…”').width > CW && line.includes(' ')) {
+            line = line.slice(0, line.lastIndexOf(' '));
+          }
+          line += '…”';
+          break;
+        }
+        ctx.fillText(line, MX, cy);
+        cy += 54;
+        lines += 1;
+        line = word;
+      } else {
+        line = test;
+      }
+    }
+    if (line) ctx.fillText(line, MX, cy);
+  }
 
   // rows on ruled lines
   const name = state.settings.name || state.contract?.current.signedName || '';
-  const rows: Array<[string, string, boolean]> = [
-    ['TRADER', name.toUpperCase(), false],
-    ['DAYS LOGGED', `${week.daysLogged} / ${week.marketDays}`, false],
-    ['TRADES TAKEN', String(week.tradesTotal), false],
-    ['RULES CLEAN', `${week.cleanRules} / ${week.ruleCount}`, false],
-    [
-      'BREACHES',
-      week.breaches.length === 0 ? 'NONE' : String(week.breaches.length),
-      week.breaches.length > 0,
-    ],
-    ['DAYS UNDER CONTRACT', String(daysUnderContract(state)), false],
+  const rows: Array<{ label: string; value: string; mono: boolean; wax: boolean }> = [
+    { label: 'TRADER', value: name.toUpperCase(), mono: false, wax: false },
+    { label: 'DAYS LOGGED', value: `${week.daysLogged} / ${week.marketDays}`, mono: true, wax: false },
+    { label: 'TRADES TAKEN', value: String(week.tradesTotal), mono: true, wax: false },
+    { label: 'RULES CLEAN', value: `${week.cleanRules} / ${week.ruleCount}`, mono: true, wax: false },
+    {
+      label: 'BREACHES',
+      value: week.breaches.length === 0 ? 'NONE' : String(week.breaches.length),
+      mono: true,
+      wax: week.breaches.length > 0,
+    },
   ];
 
-  let y = 660;
-  for (const [label, value, isWax] of rows) {
-    ctx.fillStyle = 'rgba(240,233,219,0.6)';
-    ctx.font = '500 28px Inter';
-    ctx.fillText(label, 96, y);
-    ctx.fillStyle = isWax ? WAX : PAPER;
-    ctx.font = '400 40px ui-monospace, Menlo, monospace';
+  let y = 856;
+  for (const r of rows) {
+    ctx.fillStyle = paperA(0.6);
+    ctx.font = '500 26px Inter';
+    track(ctx, 3.2);
+    ctx.fillText(r.label, MX, y);
+    track(ctx, 0);
     ctx.textAlign = 'right';
-    ctx.fillText(value, W - 96, y + 4);
+    if (r.mono) {
+      ctx.fillStyle = PAPER;
+      ctx.font = '400 38px ui-monospace, Menlo, monospace';
+      ctx.fillText(r.value, W - MX, y + 4);
+    } else {
+      ctx.fillStyle = PAPER;
+      ctx.font = '600 28px Inter';
+      track(ctx, 3.2);
+      ctx.fillText(r.value, W - MX, y);
+      track(ctx, 0);
+    }
+    if (r.wax) {
+      // wax never sets small type on ink — it underscores the figure instead
+      const vw = ctx.measureText(r.value).width;
+      rule(ctx, W - MX - vw, W - MX, y + 18, WAX, 3);
+    }
     ctx.textAlign = 'left';
-    ctx.strokeStyle = 'rgba(240,233,219,0.35)';
-    ctx.beginPath();
-    ctx.moveTo(96, y + 28);
-    ctx.lineTo(W - 96, y + 28);
-    ctx.stroke();
-    y += 86;
+    rule(ctx, MX, W - MX, y + 28, paperA(0.3));
+    y += 68;
   }
 
   const total = integrityScore(state);
-  if (total != null) {
-    ctx.fillStyle = 'rgba(240,233,219,0.5)';
-    ctx.font = '400 26px ui-monospace, Menlo, monospace';
-    ctx.fillText(`ALL-TIME INTEGRITY ${total.toFixed(1)} / 100`, 96, y + 10);
+  const standing: string[] = [];
+  if (total != null) standing.push(`ALL-TIME INTEGRITY ${total.toFixed(1)}`);
+  const dayNo = daysUnderContract(state);
+  if (dayNo > 0) standing.push(`DAY ${dayNo} UNDER CONTRACT`);
+  if (standing.length > 0) {
+    ctx.fillStyle = paperA(0.5);
+    ctx.font = '400 24px ui-monospace, Menlo, monospace';
+    track(ctx, 1.5);
+    ctx.fillText(standing.join(' · '), MX, y);
+    track(ctx, 0);
   }
 
   footer(ctx, true);
   download(ctx, `the-ledger-week-${week.fridayISO}.png`);
 }
+
+// ---------------------------------------------------------------- text record
 
 export function exportTextRecord(state: LedgerState): string {
   const lines: string[] = ['THE LEDGER — FULL RECORD', ''];
@@ -386,8 +610,9 @@ export function exportTextRecord(state: LedgerState): string {
   const integ = integrityScore(state);
   lines.push('');
   lines.push(`INTEGRITY ${integ != null ? integ.toFixed(1) + ' / 100' : '—'}`);
-  const saved = state.settings.avgTiltLoss;
-  if (saved > 0) lines.push(`STATED AVG TILT LOSS ${formatMoney(saved)}`);
+  if (state.settings.avgTiltLoss > 0) {
+    lines.push(`STATED AVG TILT LOSS ${formatMoney(state.settings.avgTiltLoss)}`);
+  }
   return lines.join('\n');
 }
 

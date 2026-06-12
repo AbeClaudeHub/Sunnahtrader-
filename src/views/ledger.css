@@ -95,3 +95,5 @@
 .entry-rule .num { color: var(--ink-60); margin-right: var(--s-4); }
 .entry-rule-broken { color: var(--wax); font-weight: 600; }
 .entry-rule-broken .num { color: var(--wax); }
+.entry-rule:disabled { cursor: default; }
+.entry-rule-locked { font-size: 9px; color: var(--wax); opacity: 0.75; }

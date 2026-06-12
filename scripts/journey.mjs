@@ -96,12 +96,22 @@ check('v1 is kept in history', await page.locator('text=PRIOR VERSIONS: v1').isV
 // ---- 4. the daily ledger: morning, then evening with a breach ----
 console.log('— the daily ledger');
 await page.locator('nav.tabs button:has-text("Ledger")').click();
+check('the tab strip is a real tablist',
+  (await page.locator('[role="tablist"] [role="tab"]').count()) === 4);
+check('the active tab is selected',
+  (await page.locator('#tab-ledger').getAttribute('aria-selected')) === 'true');
+await page.locator('#tab-ledger').focus();
+await page.keyboard.press('ArrowRight');
+check('arrow keys walk the tabs',
+  (await page.locator('#tab-contract').getAttribute('aria-selected')) === 'true');
+await page.locator('nav.tabs button:has-text("Ledger")').click();
 await page.locator('label:has-text("Intention") input').fill('Only the plan.');
 await page.locator('.entry-form-pair label:has-text("Max trades") input').fill('3');
 await page.locator('label:has-text("Max risk") input').fill('$150');
 await page.locator('label:has-text("state, one word") input').fill('patient');
 await page.getByRole('button', { name: 'Enter it in the ledger' }).click();
 check('morning entry composes the check-in', await page.locator('.composed-body').first().textContent().then((t) => t?.includes('CHECK-IN') && t.includes('Only the plan.')));
+check('the check-in carries the mark', await page.locator('.composed-body').first().textContent().then((t) => t?.includes('— THE LEDGER')));
 await page.locator('.composed button:has-text("Copy for the room")').first().click();
 await page.locator('text=Copied. Post it.').waitFor({ timeout: 2000 }).catch(() => {});
 check('copy confirms', await page.locator('text=Copied. Post it.').isVisible());
@@ -120,11 +130,23 @@ await page.getByRole('button', { name: 'Close the day' }).click();
 check('evening composes the close message', await page.locator('.composed-body').first().textContent().then((t) => t?.includes('CLOSE') && t.includes('Breached')));
 check('the breach becomes a standing debt', await page.locator('.debt').isVisible());
 
+// ---- 4b. the record cannot be quietly edited ----
+console.log('— the record cannot be quietly edited');
+await page.locator('.ledger-section').first().getByRole('button', { name: 'Amend' }).click();
+check('a recorded breach is locked in the amend form',
+  await page.locator('.entry-rule:disabled').count().then((n) => n === 1));
+check('the locked rule says so',
+  await page.locator('.entry-rule:disabled').textContent().then((t) => t?.includes('recorded')));
+await page.getByRole('button', { name: 'Close the day' }).click();
+check('re-saving the evening keeps the breach on the page', await page.locator('.debt').isVisible());
+
 // ---- 5. the circuit breaker: early exit logs a breach ----
 console.log('— the circuit breaker');
 const debtsBefore = await page.locator('.debt').count();
 await page.getByRole('button', { name: 'Start the circuit breaker' }).click();
 check('the takeover holds the screen', await page.locator('.breaker').isVisible());
+for (let i = 0; i < 9; i++) await page.keyboard.press('Tab');
+check('tab never escapes the breaker', await page.evaluate(() => !!document.activeElement?.closest('.breaker')));
 check('exit demands the verbatim phrase', await page.getByRole('button', { name: 'Break the contract' }).isDisabled());
 await page.locator('.breaker-exit-input').fill('I am choosing to break my contract');
 await page.getByRole('button', { name: 'Break the contract' }).click();
@@ -146,9 +168,17 @@ check('return lands back in the app', await page.locator('nav.tabs').isVisible()
 console.log('— the record');
 await page.locator('nav.tabs button:has-text("Record")').click();
 check('integrity is computed', await page.locator('.record-hero-num').textContent().then((t) => /\d+\.\d/.test(t ?? '')));
+check('the ledger speaks or withholds, never pretends',
+  await page.locator('text=What the ledger knows').isVisible());
 const dl1 = page.waitForEvent('download');
 await page.getByRole('button', { name: 'Export JSON' }).click();
-check('JSON export downloads', !!(await dl1));
+const jsonFile = await dl1;
+check('JSON export downloads', !!jsonFile);
+const jsonPath = join(os.tmpdir(), 'export.json');
+await jsonFile.saveAs(jsonPath);
+const exported = JSON.parse(await fs.readFile(jsonPath, 'utf8'));
+check('the export is a ledger record', exported.schema === 1 && typeof exported.days === 'object');
+check('the access flag never leaves the device', !('access' in exported));
 const dl2 = page.waitForEvent('download');
 await page.getByRole('button', { name: 'Export text' }).click();
 check('text export downloads', !!(await dl2));

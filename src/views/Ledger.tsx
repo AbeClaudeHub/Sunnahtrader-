@@ -118,9 +118,15 @@ function EveningForm({ day, onSaved }: { day: DayEntry; onSaved: () => void }) {
   const state = useLedger();
   const e = day.evening;
   const rules = state.contract?.current.rules ?? [];
+  // a breach already on the record stays on the record — an amendment can add, never erase
+  const recorded = state.breaches
+    .filter((b) => b.date === day.date && b.source === 'evening')
+    .map((b) => b.ruleId);
   const [planFollowed, setPlanFollowed] = useState<boolean | null>(e ? e.planFollowed : null);
   const [trades, setTrades] = useState(e ? String(e.trades) : '');
-  const [breached, setBreached] = useState<string[]>(e?.breachedRuleIds ?? []);
+  const [breached, setBreached] = useState<string[]>(() => [
+    ...new Set([...(e?.breachedRuleIds ?? []), ...recorded]),
+  ]);
   const [line, setLine] = useState(e?.honestLine ?? '');
 
   const complete = planFollowed !== null && trades !== '' && line.trim();
@@ -134,15 +140,17 @@ function EveningForm({ day, onSaved }: { day: DayEntry; onSaved: () => void }) {
       at: new Date().toISOString(),
     };
     setState((s) => {
-      // breaches flow into the record automatically; evening breaches for this day are re-derived
-      const kept = s.breaches.filter((b) => !(b.date === day.date && b.source === 'evening'));
-      const added: Breach[] = breached.map((id) => {
-        const r = rules.find((x) => x.id === id);
-        const prior = s.breaches.find(
-          (b) => b.date === day.date && b.source === 'evening' && b.ruleId === id
-        );
-        return (
-          prior ?? {
+      // new breaches flow into the record; the ones already there are untouched
+      const existing = new Set(
+        s.breaches
+          .filter((b) => b.date === day.date && b.source === 'evening')
+          .map((b) => b.ruleId)
+      );
+      const added: Breach[] = breached
+        .filter((id) => !existing.has(id))
+        .map((id) => {
+          const r = rules.find((x) => x.id === id);
+          return {
             id: `b${Date.now()}-${id}`,
             date: day.date,
             ruleId: id,
@@ -150,12 +158,11 @@ function EveningForm({ day, onSaved }: { day: DayEntry; onSaved: () => void }) {
             price: r?.price ?? '',
             paid: false,
             source: 'evening' as const,
-          }
-        );
-      });
+          };
+        });
       return {
         days: { ...s.days, [day.date]: { ...s.days[day.date], date: day.date, evening: entry } },
-        breaches: [...kept, ...added],
+        breaches: [...s.breaches, ...added],
       };
     });
     onSaved();
@@ -197,16 +204,20 @@ function EveningForm({ day, onSaved }: { day: DayEntry; onSaved: () => void }) {
           <div className="entry-rules" role="group" aria-label="Rules breached">
             {rules.map((r, i) => {
               const on = breached.includes(r.id);
+              const locked = recorded.includes(r.id);
               return (
                 <button
                   key={r.id}
                   className={`entry-rule${on ? ' entry-rule-broken' : ''}`}
                   aria-pressed={on}
+                  disabled={locked}
+                  title={locked ? 'On the record. A recorded breach stays.' : undefined}
                   onClick={() =>
                     setBreached(on ? breached.filter((x) => x !== r.id) : [...breached, r.id])
                   }
                 >
                   <span className="num">{String(i + 1).padStart(2, '0')}</span> {r.title}
+                  {locked && <span className="entry-rule-locked label"> · recorded</span>}
                 </button>
               );
             })}

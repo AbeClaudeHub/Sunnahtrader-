@@ -40,6 +40,7 @@ export function Breaker() {
   const [now, setNow] = useState(() => Date.now());
   const [exitTyped, setExitTyped] = useState('');
   const noteRef = useRef<HTMLTextAreaElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const t = window.setInterval(() => setNow(Date.now()), 500);
@@ -55,11 +56,47 @@ export function Breaker() {
     };
   }, []);
 
+  const elapsed = active
+    ? Math.max(0, Math.floor((now - new Date(active.startedAt).getTime()) / 1000))
+    : 0;
+  const remaining = Math.max(0, TOTAL_SECONDS - elapsed);
+  const done = active != null && remaining === 0;
+
+  // the dialog keeps focus — tab cycles inside, never back to the platform behind it
+  useEffect(() => {
+    const node = dialogRef.current;
+    if (!node) return;
+    const before = document.activeElement as HTMLElement | null;
+    node.focus();
+    function onKey(e: KeyboardEvent) {
+      if (e.key !== 'Tab' || !node) return;
+      const list = [...node.querySelectorAll<HTMLElement>('button, input, textarea')].filter(
+        (el) => !el.hasAttribute('disabled')
+      );
+      if (list.length === 0) {
+        e.preventDefault();
+        return;
+      }
+      const first = list[0];
+      const last = list[list.length - 1];
+      const at = document.activeElement;
+      if (e.shiftKey && (at === first || at === node)) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && at === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+    node.addEventListener('keydown', onKey);
+    return () => {
+      node.removeEventListener('keydown', onKey);
+      before?.focus?.();
+    };
+  }, [done]);
+
   if (!active) return null;
 
-  const elapsed = Math.max(0, Math.floor((now - new Date(active.startedAt).getTime()) / 1000));
-  const remaining = Math.max(0, TOTAL_SECONDS - elapsed);
-  const done = remaining === 0;
   const step = elapsed < 300 ? 1 : elapsed < 600 ? 2 : 3;
   const mm = String(Math.floor(remaining / 60)).padStart(2, '0');
   const ss = String(remaining % 60).padStart(2, '0');
@@ -122,7 +159,14 @@ export function Breaker() {
 
   if (done) {
     return (
-      <div className="breaker ink-ground" role="dialog" aria-modal="true" aria-label="Circuit breaker complete">
+      <div
+        className="breaker ink-ground"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Circuit breaker complete"
+        ref={dialogRef}
+        tabIndex={-1}
+      >
         <div className="breaker-frame breaker-frame-done">
           <div className="breaker-head">
             <span className="label breaker-label">Circuit breaker</span>
@@ -142,7 +186,14 @@ export function Breaker() {
   }
 
   return (
-    <div className="breaker ink-ground" role="dialog" aria-modal="true" aria-label="Circuit breaker">
+    <div
+      className="breaker ink-ground"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Circuit breaker"
+      ref={dialogRef}
+      tabIndex={-1}
+    >
       <div className="breaker-frame">
         <div className="breaker-head">
           <span className="label breaker-label">Circuit breaker</span>

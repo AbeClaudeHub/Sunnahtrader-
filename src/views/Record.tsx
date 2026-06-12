@@ -10,6 +10,7 @@ import {
 } from '../lib/stats';
 import { formatMoney, marketDaysBetween, todayISO } from '../lib/dates';
 import { contractStartISO } from '../lib/stats';
+import { eveningsUntilFindings, findings } from '../lib/patterns';
 import { exportTextRecord, downloadText, exportWeeklyCard } from '../lib/exportCard';
 import './record.css';
 
@@ -91,6 +92,31 @@ export function Record() {
         <p className="record-gaps num">
           {gaps.length} MISSED {gaps.length === 1 ? 'DAY' : 'DAYS'}. THE GAPS STAY.
         </p>
+      )}
+
+      {state.contract && (
+        <section className="record-section">
+          <div className="section-head">
+            <span className="label">What the ledger knows</span>
+            <span className="status num">ARITHMETIC, NOT OPINION</span>
+          </div>
+          {(() => {
+            const found = findings(state);
+            if (found.length > 0) {
+              return found.map((f) => (
+                <p className="record-finding" key={f.id}>{f.text}</p>
+              ));
+            }
+            const owed = eveningsUntilFindings(state);
+            return (
+              <p className="record-finding record-finding-waiting">
+                {owed > 0
+                  ? `The ledger withholds judgment until it has evidence. ${owed} more logged ${owed === 1 ? 'evening' : 'evenings'}.`
+                  : 'Nothing yet worth saying. The ledger keeps counting.'}
+              </p>
+            );
+          })()}
+        </section>
       )}
 
       <section className="record-section">
@@ -204,6 +230,10 @@ export function Record() {
 
       <section className="record-section">
         <div className="section-head"><span className="label">Your record, yours</span></div>
+        <p className="record-keep">
+          The record lives in this browser, on this device — no server holds a copy. Clearing
+          the browser clears the book. Export the JSON and keep it somewhere of your own.
+        </p>
         <div className="record-data-actions">
           <button
             className="btn record-btn"

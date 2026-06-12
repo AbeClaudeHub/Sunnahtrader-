@@ -93,6 +93,7 @@
 .breaker-note {
   margin-top: var(--s-24);
   width: 100%;
+  resize: none;
   border-bottom: var(--rule) solid var(--paper-45);
   padding: var(--s-8) 0;
   font-family: var(--display);

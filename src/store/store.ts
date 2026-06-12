@@ -89,7 +89,9 @@ export function useLedger(): LedgerState {
 }
 
 export function exportJSON(): string {
-  return JSON.stringify(state, null, 2);
+  // the access flag is an entitlement, not a record — it never leaves the device
+  const { access: _access, ...record } = state;
+  return JSON.stringify(record, null, 2);
 }
 
 export type ImportResult = { ok: true } | { ok: false; error: string };
@@ -103,7 +105,8 @@ export function importJSON(raw: string): ImportResult {
   }
   const lifted = lift(parsed);
   if (!lifted) return { ok: false, error: 'The file is not a ledger record.' };
-  state = lifted;
+  // an imported record restores the book, never grants or revokes access
+  state = { ...lifted, access: state.access };
   persist();
   listeners.forEach((l) => l());
   return { ok: true };

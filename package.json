@@ -7,7 +7,10 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "shots": "node scripts/shoot.mjs"
+    "shots": "node scripts/shoot.mjs",
+    "cards": "node scripts/cards.mjs",
+    "test": "TZ=America/New_York node scripts/test.mjs",
+    "journey": "node scripts/journey.mjs"
   },
   "dependencies": {
     "react": "^18.3.1",

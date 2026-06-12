@@ -36,31 +36,58 @@ export function AppShell() {
     };
   }, [inkSurface]);
 
+  // arrow keys walk the enabled tabs; focus follows selection (roving tabindex)
+  function onTabKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
+    const enabled = TABS.filter((t) => !(auditOnly && t.id !== 'audit'));
+    const i = enabled.findIndex((t) => t.id === tab);
+    let next: Tab | null = null;
+    if (e.key === 'ArrowRight') next = enabled[(i + 1) % enabled.length].id;
+    else if (e.key === 'ArrowLeft') next = enabled[(i - 1 + enabled.length) % enabled.length].id;
+    else if (e.key === 'Home') next = enabled[0].id;
+    else if (e.key === 'End') next = enabled[enabled.length - 1].id;
+    if (!next) return;
+    e.preventDefault();
+    setTab(next);
+    document.getElementById(`tab-${next}`)?.focus();
+  }
+
   return (
     <div className={`shell${inkSurface ? ' ink-ground' : ' grain'}`}>
       <div className="shell-inner app-scroll">
         <nav className="tabs" aria-label="The ledger">
-          {TABS.map((t) => {
-            const disabled = auditOnly && t.id !== 'audit';
-            return (
-              <button
-                key={t.id}
-                className={`tab label${tab === t.id ? ' tab-active' : ''}`}
-                aria-current={tab === t.id ? 'page' : undefined}
-                disabled={disabled}
-                onClick={() => setTab(t.id)}
-              >
-                {t.name}
-              </button>
-            );
-          })}
+          <div className="tabs-list" role="tablist" aria-label="Ledger pages" onKeyDown={onTabKeyDown}>
+            {TABS.map((t) => {
+              const disabled = auditOnly && t.id !== 'audit';
+              const selected = tab === t.id;
+              return (
+                <button
+                  key={t.id}
+                  id={`tab-${t.id}`}
+                  role="tab"
+                  aria-selected={selected}
+                  aria-controls="ledger-panel"
+                  tabIndex={selected ? 0 : -1}
+                  className={`tab label${selected ? ' tab-active' : ''}`}
+                  disabled={disabled}
+                  onClick={() => setTab(t.id)}
+                >
+                  {t.name}
+                </button>
+              );
+            })}
+          </div>
           <button className="breaker-trigger" aria-label="Start the circuit breaker" onClick={startBreaker}>
             <SealMark />
             <span className="label breaker-trigger-label">Breaker</span>
           </button>
         </nav>
 
-        <main className="shell-main">
+        <main
+          className="shell-main"
+          id="ledger-panel"
+          role="tabpanel"
+          aria-labelledby={`tab-${tab}`}
+        >
           {tab === 'ledger' && <Ledger />}
           {tab === 'contract' && <Contract onAudit={() => setTab('audit')} />}
           {tab === 'record' && <Record />}

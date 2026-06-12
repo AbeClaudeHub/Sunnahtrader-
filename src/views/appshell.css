@@ -24,6 +24,9 @@
 }
 .ink-ground .tabs { background: var(--ink); }
 
+/* the tablist is semantics, not box — its tabs sit directly in the strip's flex row */
+.tabs-list { display: contents; }
+
 .tab {
   color: var(--ink-45);
   padding-bottom: var(--s-8);

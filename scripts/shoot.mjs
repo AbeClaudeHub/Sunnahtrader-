@@ -31,71 +31,12 @@ const server = http.createServer((req, res) => {
 await new Promise((r) => server.listen(4399, r));
 const BASE = 'http://localhost:4399';
 
-// ---------- seed states ----------
+// ---------- seed states (shared with cards.mjs) ----------
 
-const T_MORNING = new Date('2026-06-12T09:10:00');
-const T_EVENING = new Date('2026-06-12T17:30:00');
-
-const AUDIT = {
-  answers: [3, 1, 2, 2, 3, 1, 1, 2, 3, 1, 1, 2, 1, 2, 1, 1],
-  scores: { ego: 5, greed: 7, anger: 11, doubt: 4 },
-  dominant: 'anger',
-  seconded: 'greed',
-  completedAt: '2026-06-03T18:20:00.000Z',
-};
-
-const RULES = [
-  { id: 'r1', libraryId: '07', title: 'The Fifteen', when: 'Any trade stops me out.', then: 'I start the circuit breaker and do not touch the platform until it ends.', noExceptions: '“The re-entry signal is valid right now.”', price: '$50 to charity, and the next session sat out entirely.' },
-  { id: 'r2', libraryId: '08', title: 'The Shrinking Hand', when: 'I enter any trade within an hour of a loss.', then: 'I cut that trade’s size to half my standard — set before entry, not after.', noExceptions: '“I need full size to make it back.”', price: '$25 per breach, doubling on the same day.' },
-  { id: 'r3', libraryId: '09', title: 'The Two-Loss Door', when: 'I take my second red trade of the day.', then: 'I close the platform and write the evening entry. The day is over.', noExceptions: '“The first one was just bad luck.”', price: '$100 to charity — the expensive one, because this is the expensive mistake.' },
-  { id: 'r4', libraryId: '04', title: 'The Closing Bell', when: 'I hit my daily profit target.', then: 'I close the platform and write the evening entry, even at 10 a.m.', noExceptions: '“The market is unusually good today.”', price: 'Half that day’s profit to charity.' },
-  { id: 'r5', libraryId: '05', title: 'The Counted Hand', when: 'I take my final allowed trade of the day.', then: 'I log out of the broker entirely — not minimized, logged out.', noExceptions: '“This next one is A-plus.”', price: '$50, and tomorrow’s max drops to one trade.' },
-];
-
-const CONTRACT = {
-  current: { version: 2, rules: RULES, signedName: 'Abe Alwan', signedAt: '2026-06-04T14:05:00.000Z' },
-  history: [{ version: 1, rules: RULES, signedName: 'Abe Alwan', signedAt: '2026-06-04T13:00:00.000Z' }],
-};
-
-function day(date, morning, evening) {
-  const d = { date };
-  if (morning) d.morning = { intention: morning[0], maxTrades: morning[1], maxRisk: morning[2], state: morning[3], at: `${date}T08:46:00.000Z` };
-  if (evening) d.evening = { planFollowed: evening[0], trades: evening[1], breachedRuleIds: evening[2], honestLine: evening[3], at: `${date}T16:10:00.000Z` };
-  return d;
-}
-
-const DAYS_FULL = {
-  '2026-06-04': day('2026-06-04', ['Trade the plan, nothing else.', 3, '$150', 'steady'], [true, 2, [], 'Followed the plan. Boring is the point.']),
-  '2026-06-05': day('2026-06-05', ['No trades in the first ten minutes.', 3, '$150', 'patient'], [true, 3, [], 'Took all three. Stopped at three.']),
-  // 06-08 missed — the gap stays
-  '2026-06-09': day('2026-06-09', ['One good trade beats four fast ones.', 2, '$100', 'tight'], [false, 4, ['r1', 'r5'], 'Stopped out, went straight back in. Paid for it twice.']),
-  '2026-06-10': day('2026-06-10', ['Repair day. Half size.', 2, '$75', 'humble'], [true, 1, [], 'One trade, half size, done.']),
-  '2026-06-11': day('2026-06-11', ['Take only what the plan gives.', 3, '$150', 'patient'], [true, 2, [], 'Two clean entries. Left the third alone.']),
-};
-
-const BREACHES = [
-  { id: 'b1', date: '2026-06-09', ruleId: 'r1', ruleTitle: 'The Fifteen', price: '$50 to charity, and the next session sat out entirely.', paid: true, paidAt: '2026-06-09T20:00:00.000Z', source: 'evening' },
-  { id: 'b2', date: '2026-06-09', ruleId: 'r5', ruleTitle: 'The Counted Hand', price: '$50, and tomorrow’s max drops to one trade.', paid: false, source: 'evening' },
-];
-
-const SESSIONS = [
-  { startedAt: '2026-06-10T15:02:00.000Z', endedAt: '2026-06-10T15:17:00.000Z', completed: true, note: 'Stopped out on the second test of the level.' },
-];
-
-const SETTINGS = { name: 'Abe Alwan', avgTiltLoss: 300, baselineBreachesPerWeek: 3 };
-
-function ledgerState(over = {}) {
-  return {
-    schema: 1, access: true, auditDraft: null, audit: null, contract: null,
-    settings: { name: '', avgTiltLoss: 0, baselineBreachesPerWeek: 0 },
-    days: {}, breaches: [], breaker: { active: null, sessions: [] }, ...over,
-  };
-}
-
-const FULL = ledgerState({
-  audit: AUDIT, contract: CONTRACT, settings: SETTINGS,
-  days: DAYS_FULL, breaches: BREACHES, breaker: { active: null, sessions: SESSIONS },
-});
+import {
+  T_MORNING, T_EVENING, AUDIT, CONTRACT, DAYS_FULL, SESSIONS, FULL, DEEP,
+  day, ledgerState,
+} from './seed.mjs';
 
 const breakerActive = (minAgo) =>
   ({ ...FULL, breaker: { active: { startedAt: new Date(T_MORNING.getTime() - minAgo * 60000).toISOString(), note: minAgo > 5 ? 'Stopped out on the level I planned. It held the third time.' : undefined }, sessions: SESSIONS } });
@@ -140,6 +81,7 @@ const SHOTS = [
   { name: 'record-full', url: '/app', state: FULL, time: T_EVENING, tab: 'Record' },
   { name: 'record-full-foot', url: '/app', state: FULL, time: T_EVENING, tab: 'Record', scrollTo: 'bottom' },
   { name: 'record-empty', url: '/app', state: ledgerState({ access: true, audit: AUDIT }), time: T_MORNING, tab: 'Record' },
+  { name: 'record-deep', url: '/app', state: DEEP, time: T_EVENING, tab: 'Record' },
 ];
 
 const VIEWPORTS = [
