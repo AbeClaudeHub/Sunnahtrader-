@@ -88,6 +88,17 @@ h1, h2, h3 { font-weight: inherit; font-size: inherit; }
   font-variant-numeric: tabular-nums;
 }
 
+/* read by screen readers, invisible on the page */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
 a { color: inherit; }
 
 button, a, input, select, textarea {

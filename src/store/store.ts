@@ -94,6 +94,18 @@ export function exportJSON(): string {
 
 export type ImportResult = { ok: true } | { ok: false; error: string };
 
+/** checks a file without touching the current record */
+export function validateJSON(raw: string): ImportResult {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    return { ok: false, error: 'The file could not be read. It is not valid JSON.' };
+  }
+  if (!lift(parsed)) return { ok: false, error: 'The file is not a ledger record.' };
+  return { ok: true };
+}
+
 export function importJSON(raw: string): ImportResult {
   let parsed: unknown;
   try {

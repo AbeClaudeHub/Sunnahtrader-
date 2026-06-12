@@ -77,6 +77,9 @@ await page.waitForTimeout(300);
 check('sixteen answers produce a verdict', await page.locator('.verdict-name').isVisible());
 const saboteur = await page.locator('.verdict-name').textContent();
 console.log(`        verdict: ${saboteur}`);
+await page.locator('.verdict-retake').click();
+check('one tap does not erase the verdict', await page.locator('.verdict-name').isVisible());
+check('retake asks for the second tap', await page.locator('text=Tap again').isVisible());
 
 // ---- 3. the contract: sign, then amend to v2 ----
 console.log('— the contract');
@@ -185,6 +188,18 @@ await page.evaluate((s) => localStorage.setItem('the-ledger-v1', s), state);
 await page.reload();
 await page.locator('nav.tabs button:has-text("Record")').click();
 check('round-tripped record restores integrity', await page.locator('.record-hero-num').textContent().then((t) => /\d+\.\d/.test(t ?? '')));
+check('the book reads back the logged days', await page.locator('text=The book, day by day').isVisible());
+
+// a valid import over a living record asks before replacing it
+await page.locator('input[type=file]').setInputFiles(tmp3);
+await page.locator('text=Replace the record').waitFor({ timeout: 3000 }).catch(() => {});
+check('valid import over a living record asks first', await page.locator('text=Replace the record').isVisible());
+await page.getByRole('button', { name: 'Keep what I have' }).click();
+check('declining keeps the current record', await page.locator('text=The current record stands.').isVisible());
+check('the record is untouched after declining', await page.locator('.record-hero-num').textContent().then((t) => /\d+\.\d/.test(t ?? '')));
+await page.locator('input[type=file]').setInputFiles(tmp3);
+await page.getByRole('button', { name: 'Replace the record' }).click();
+check('confirming applies the import', await page.locator('text=The record is restored.').isVisible());
 
 // ---- 8. breaker survives a refresh ----
 console.log('— persistence under fire');

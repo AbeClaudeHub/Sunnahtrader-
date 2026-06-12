@@ -49,8 +49,22 @@ function Questions() {
     if (i > 0) setState({ auditDraft: { ...draft, index: i - 1 } });
   }
 
+  // the keyboard answers too: 0–3 scores, Backspace steps back
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.key >= '0' && e.key <= '3') answer(Number(e.key));
+      else if (e.key === 'Backspace') back();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  });
+
   return (
     <div className="audit-q">
+      <span className="sr-only" aria-live="polite">
+        Question {i + 1} of 16: {q.text}
+      </span>
       <div className="audit-q-head">
         <button className="audit-back label" onClick={back} disabled={i === 0}>
           Back
@@ -85,6 +99,10 @@ export function Verdict({ onContract }: { onContract: () => void }) {
   const audit = state.audit!;
   const [fadeGone, setFadeGone] = useState(false);
   const [reveal] = useState(() => sessionStorage.getItem('verdict-seen') !== '1');
+  const [retakeArmed, setRetakeArmed] = useState(false);
+  const retakeTimer = useRef<number>();
+
+  useEffect(() => () => window.clearTimeout(retakeTimer.current), []);
 
   useEffect(() => {
     sessionStorage.setItem('verdict-seen', '1');
@@ -135,10 +153,17 @@ export function Verdict({ onContract }: { onContract: () => void }) {
         <button
           className="verdict-retake label"
           onClick={() => {
+            // the verdict is not erased by one stray tap — it asks once
+            if (!retakeArmed) {
+              setRetakeArmed(true);
+              retakeTimer.current = window.setTimeout(() => setRetakeArmed(false), 4000);
+              return;
+            }
+            window.clearTimeout(retakeTimer.current);
             setState({ audit: null, auditDraft: { answers: Array(16).fill(null), index: 0 } });
           }}
         >
-          Re-run the audit
+          {retakeArmed ? 'Tap again — this verdict is replaced' : 'Re-run the audit'}
         </button>
       </div>
 

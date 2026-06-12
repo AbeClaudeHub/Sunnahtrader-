@@ -42,6 +42,35 @@
   line-height: 1.5;
 }
 
+/* the book — each logged day read back, on its own ruled block */
+.book-day { padding: var(--s-8) 0; border-bottom: var(--rule) solid var(--ink); }
+.book-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--s-16);
+}
+.book-date, .book-mark {
+  font-size: var(--t-11);
+  letter-spacing: 0.08em;
+  color: var(--ink-60);
+}
+.book-line { margin-top: var(--s-4); font-size: var(--t-13); line-height: 1.55; }
+.book-line .num { font-size: var(--t-13); }
+.book-k {
+  font-size: var(--t-11);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--ink-60);
+  margin-right: var(--s-4);
+}
+.book-more {
+  margin-top: var(--s-16);
+  color: var(--ink-60);
+  border-bottom: var(--rule) solid var(--ink-60);
+  padding-bottom: 2px;
+}
+
 .record-btn { margin-top: var(--s-16); }
 .record-data-actions { display: flex; flex-direction: column; }
 .record-import-msg {
@@ -49,6 +78,16 @@
   font-size: var(--t-13);
   color: var(--ink-60);
   text-align: center;
+}
+.record-import-confirm {
+  margin-top: var(--s-16);
+  border: var(--border) solid var(--wax);
+  padding: var(--s-16);
+}
+.record-import-warn {
+  font-size: var(--t-13);
+  line-height: 1.5;
+  color: var(--wax);
 }
 
 .record-empty {

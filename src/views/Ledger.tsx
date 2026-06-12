@@ -1,25 +1,50 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { setState, useLedger } from '../store/store';
 import type { Breach, DayEntry, EveningEntry, MorningEntry } from '../store/types';
-import { hijriDate, longDate, todayISO, weekdayName, fromISO } from '../lib/dates';
+import { hijriDate, longDate, toISODate, weekdayName, fromISO } from '../lib/dates';
 import { composeEvening, composeMorning, copyText } from '../lib/compose';
 import { daysUnderContract, unpaidBreaches } from '../lib/stats';
 import './ledger.css';
 
 const EVENING_HOUR = 16;
 
+/** a slow clock, so the page turns at midnight and at the close without a reload */
+function useNow(): Date {
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const tick = () => setNow(new Date());
+    const t = window.setInterval(tick, 30_000);
+    const onVisible = () => {
+      if (!document.hidden) tick();
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      window.clearInterval(t);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+  }, []);
+  return now;
+}
+
 function CopyButton({ text, children }: { text: string; children: string }) {
-  const [copied, setCopied] = useState(false);
+  const [result, setResult] = useState<'idle' | 'copied' | 'failed'>('idle');
+  const timer = useRef<number>();
+  useEffect(() => () => window.clearTimeout(timer.current), []);
   return (
     <button
       className="btn composed-copy"
-      onClick={() => {
-        setCopied(true);
-        setTimeout(() => setCopied(false), 1600);
-        void copyText(text);
+      onClick={async () => {
+        const ok = await copyText(text);
+        setResult(ok ? 'copied' : 'failed');
+        window.clearTimeout(timer.current);
+        timer.current = window.setTimeout(() => setResult('idle'), 2000);
       }}
     >
-      {copied ? 'Copied. Post it.' : children}
+      {result === 'copied'
+        ? 'Copied. Post it.'
+        : result === 'failed'
+          ? 'Copy failed — select it above'
+          : children}
     </button>
   );
 }
@@ -322,10 +347,11 @@ function EveningSection({ day, primary }: { day: DayEntry; primary: boolean }) {
 
 export function Ledger() {
   const state = useLedger();
-  const today = todayISO();
+  const now = useNow();
+  const today = toISODate(now);
   const day: DayEntry = state.days[today] ?? { date: today };
   const d = fromISO(today);
-  const eveningPrimary = new Date().getHours() >= EVENING_HOUR || (!!day.morning && !!day.evening);
+  const eveningPrimary = now.getHours() >= EVENING_HOUR || (!!day.morning && !!day.evening);
   const dayNo = daysUnderContract(state);
   const hijri = hijriDate(d);
 

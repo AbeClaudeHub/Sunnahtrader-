@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { exportJSON, importJSON, useLedger } from '../store/store';
+import { exportJSON, importJSON, validateJSON, useLedger } from '../store/store';
 import {
   daysUnderContract,
   integrityScore,
@@ -8,7 +8,7 @@ import {
   ruleCleanStreak,
   weekSummary,
 } from '../lib/stats';
-import { formatMoney, marketDaysBetween, todayISO } from '../lib/dates';
+import { formatMoney, fromISO, marketDaysBetween, shortDate, todayISO } from '../lib/dates';
 import { contractStartISO } from '../lib/stats';
 import { exportTextRecord, downloadText, exportWeeklyCard } from '../lib/exportCard';
 import './record.css';
@@ -49,10 +49,67 @@ function DaysStrip() {
   );
 }
 
+/** the book — every logged day, read back, most recent first */
+function Book() {
+  const state = useLedger();
+  const [shown, setShown] = useState(10);
+  const days = Object.values(state.days)
+    .filter((d) => d.morning || d.evening)
+    .sort((a, b) => (a.date < b.date ? 1 : -1));
+  if (days.length === 0) return null;
+
+  const breachesByDate = new Map<string, number>();
+  for (const b of state.breaches) {
+    breachesByDate.set(b.date, (breachesByDate.get(b.date) ?? 0) + 1);
+  }
+
+  return (
+    <section className="record-section">
+      <div className="section-head">
+        <span className="label">The book, day by day</span>
+        <span className="status num">{days.length} {days.length === 1 ? 'DAY' : 'DAYS'}</span>
+      </div>
+      {days.slice(0, shown).map((d) => {
+        const n = breachesByDate.get(d.date) ?? 0;
+        return (
+          <div className="book-day" key={d.date}>
+            <div className="book-head">
+              <span className="num book-date">{shortDate(fromISO(d.date))}</span>
+              <span className={`num book-mark${n > 0 ? ' record-wax' : ''}`}>
+                {n > 0 ? `${n} ${n === 1 ? 'BREACH' : 'BREACHES'}` : d.evening ? 'CLEAN' : 'OPEN'}
+              </span>
+            </div>
+            {d.morning && (
+              <p className="book-line">
+                <span className="book-k">AM</span> “{d.morning.intention}” · max{' '}
+                <span className="num">{d.morning.maxTrades}</span> · risk{' '}
+                <span className="num">{d.morning.maxRisk}</span> · {d.morning.state}
+              </p>
+            )}
+            {d.evening && (
+              <p className="book-line">
+                <span className="book-k">PM</span> plan {d.evening.planFollowed ? 'followed' : 'broken'} ·{' '}
+                <span className="num">{d.evening.trades}</span>{' '}
+                {d.evening.trades === 1 ? 'trade' : 'trades'} · “{d.evening.honestLine}”
+              </p>
+            )}
+          </div>
+        );
+      })}
+      {days.length > shown && (
+        <button className="book-more label" onClick={() => setShown((s) => s + 30)}>
+          Earlier days — {days.length - shown} more
+        </button>
+      )}
+    </section>
+  );
+}
+
 export function Record() {
   const state = useLedger();
   const fileRef = useRef<HTMLInputElement>(null);
   const [importMsg, setImportMsg] = useState<string | null>(null);
+  const [pendingImport, setPendingImport] = useState<string | null>(null);
 
   const days = daysUnderContract(state);
   const integ = integrityScore(state);
@@ -65,7 +122,22 @@ export function Record() {
   function onImport(file: File) {
     const reader = new FileReader();
     reader.onload = () => {
-      const res = importJSON(String(reader.result));
+      const raw = String(reader.result);
+      const valid = validateJSON(raw);
+      if (!valid.ok) {
+        setPendingImport(null);
+        setImportMsg(valid.error);
+        return;
+      }
+      // a valid file over a living record asks first — the record is not lost to one tap
+      const hasRecord =
+        !!state.audit || !!state.contract || loggedCount > 0 || state.breaches.length > 0;
+      if (hasRecord) {
+        setImportMsg(null);
+        setPendingImport(raw);
+        return;
+      }
+      const res = importJSON(raw);
       setImportMsg(res.ok ? 'The record is restored.' : res.error);
     };
     reader.readAsText(file);
@@ -150,6 +222,8 @@ export function Record() {
         )}
       </section>
 
+      <Book />
+
       {saved && (
         <section className="record-section">
           <div className="section-head"><span className="label">What restraint is worth</span></div>
@@ -232,6 +306,32 @@ export function Record() {
             }}
           />
         </div>
+        {pendingImport && (
+          <div className="record-import-confirm">
+            <p className="record-import-warn">
+              This file replaces the record you have now. What stands today is not kept.
+            </p>
+            <button
+              className="btn record-btn"
+              onClick={() => {
+                const res = importJSON(pendingImport);
+                setPendingImport(null);
+                setImportMsg(res.ok ? 'The record is restored.' : res.error);
+              }}
+            >
+              Replace the record
+            </button>
+            <button
+              className="btn record-btn"
+              onClick={() => {
+                setPendingImport(null);
+                setImportMsg('The current record stands.');
+              }}
+            >
+              Keep what I have
+            </button>
+          </div>
+        )}
         {importMsg && <p className="record-import-msg">{importMsg}</p>}
       </section>
     </div>

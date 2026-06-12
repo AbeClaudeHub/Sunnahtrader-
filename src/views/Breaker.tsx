@@ -40,10 +40,16 @@ export function Breaker() {
   const [now, setNow] = useState(() => Date.now());
   const [exitTyped, setExitTyped] = useState('');
   const noteRef = useRef<HTMLTextAreaElement>(null);
+  const frameRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const t = window.setInterval(() => setNow(Date.now()), 500);
     return () => window.clearInterval(t);
+  }, []);
+
+  // the takeover takes the focus too — keyboards and readers land inside it
+  useEffect(() => {
+    frameRef.current?.focus();
   }, []);
 
   // the takeover owns the scroll — the app behind it holds still
@@ -123,7 +129,7 @@ export function Breaker() {
   if (done) {
     return (
       <div className="breaker ink-ground" role="dialog" aria-modal="true" aria-label="Circuit breaker complete">
-        <div className="breaker-frame breaker-frame-done">
+        <div className="breaker-frame breaker-frame-done" ref={frameRef} tabIndex={-1}>
           <div className="breaker-head">
             <span className="label breaker-label">Circuit breaker</span>
             <SealMark className="breaker-seal" />
@@ -143,7 +149,7 @@ export function Breaker() {
 
   return (
     <div className="breaker ink-ground" role="dialog" aria-modal="true" aria-label="Circuit breaker">
-      <div className="breaker-frame">
+      <div className="breaker-frame" ref={frameRef} tabIndex={-1}>
         <div className="breaker-head">
           <span className="label breaker-label">Circuit breaker</span>
           <SealMark className="breaker-seal" />
@@ -158,7 +164,7 @@ export function Breaker() {
           <p className="breaker-clock-sub label">The market will still be there</p>
         </div>
 
-        <div className="breaker-stepblock">
+        <div className="breaker-stepblock" aria-live="polite">
           {step === 1 && <p className="breaker-instruction">Hands off the platform.</p>}
           {step === 2 && (
             <>
