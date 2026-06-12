@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THE LEDGER — Daily</title>
+<link rel="stylesheet" href="fonts/fonts.css">
+<link rel="stylesheet" href="tokens.css">
+<style>
+  body { overflow: hidden; }
+  .screen {
+    width: 390px;
+    height: 844px;
+    margin: 0 auto;
+    padding: var(--s-16) var(--s-24) var(--s-24);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+
+  /* tab strip — ledger tabs, not app nav */
+  .tabs {
+    display: flex;
+    gap: var(--s-16);
+    align-items: baseline;
+    border-bottom: var(--rule) solid var(--ink);
+    padding-bottom: var(--s-8);
+  }
+  .tab {
+    font-size: var(--t-11);
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(15, 13, 9, 0.45);
+    padding-bottom: var(--s-8);
+    margin-bottom: calc(-1 * var(--s-8) - 0.5px);
+  }
+  .tab.active {
+    color: var(--ink);
+    border-bottom: var(--border) solid var(--ink);
+  }
+  .breaker-mark {
+    margin-left: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    color: var(--wax);
+  }
+  .breaker-mark .label { font-size: 9px; letter-spacing: 0.18em; color: var(--wax); }
+
+  /* date heading — the page of the book */
+  .dateline { margin-top: var(--s-24); }
+  .day {
+    font-family: var(--display);
+    font-size: var(--t-34);
+    font-variation-settings: 'opsz' 60;
+    font-weight: 540;
+    line-height: 1.1;
+  }
+  .date-sub {
+    font-family: var(--mono);
+    font-size: var(--t-11);
+    letter-spacing: 0.08em;
+    color: rgba(15, 13, 9, 0.6);
+    margin-top: var(--s-4);
+  }
+
+  /* standing debt — wax, and it will not stop showing */
+  .debt {
+    margin-top: var(--s-16);
+    border: var(--border) solid var(--wax);
+    padding: var(--s-8) var(--s-16);
+    color: var(--wax);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--s-8);
+  }
+  .debt-text { font-size: var(--t-13); line-height: 1.45; }
+  .debt-text strong { font-weight: 600; }
+  .debt-text .num { font-size: var(--t-13); }
+  .debt-action {
+    font-size: var(--t-11);
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--wax);
+    border-bottom: var(--border) solid var(--wax);
+    padding-bottom: 2px;
+    white-space: nowrap;
+  }
+
+  .section { margin-top: var(--s-24); }
+  .section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    border-bottom: var(--rule) solid var(--ink);
+    padding-bottom: var(--s-4);
+  }
+  .section-head .status { font-family: var(--mono); font-size: var(--t-11); color: rgba(15,13,9,0.55); }
+
+  /* the intention — the page's typographic moment */
+  .intention {
+    font-family: var(--display);
+    font-style: italic;
+    font-size: var(--t-24);
+    font-variation-settings: 'opsz' 30;
+    font-weight: 440;
+    line-height: 1.3;
+    padding: var(--s-16) 0 var(--s-8);
+    border-bottom: var(--rule) solid var(--ink);
+  }
+
+  .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: var(--s-8) 0;
+    border-bottom: var(--rule) solid var(--ink);
+  }
+  .row .label { color: rgba(15, 13, 9, 0.55); }
+  .row .num { font-size: var(--t-15); }
+  .row .word { font-size: var(--t-15); }
+
+  /* the composed check-in */
+  .composed {
+    margin-top: var(--s-16);
+    border: var(--border) solid var(--ink);
+  }
+  .composed-body {
+    padding: var(--s-16);
+    font-family: var(--mono);
+    font-size: var(--t-13);
+    line-height: 1.6;
+    white-space: pre-line;
+  }
+  .composed .btn { border: none; border-top: var(--rule) solid var(--ink); }
+
+  .evening { margin-top: var(--s-24); }
+  .evening-empty {
+    padding: var(--s-16) 0;
+    font-size: var(--t-13);
+    color: rgba(15, 13, 9, 0.55);
+    border-bottom: var(--rule) solid var(--ink);
+  }
+
+  .foot {
+    margin-top: auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding-top: var(--s-8);
+    border-top: var(--rule) solid var(--ink);
+  }
+  .foot .label { color: rgba(15, 13, 9, 0.55); }
+  .foot .num { font-size: var(--t-13); }
+</style>
+</head>
+<body class="grain">
+  <div class="screen">
+    <nav class="tabs">
+      <span class="tab active">Ledger</span>
+      <span class="tab">Contract</span>
+      <span class="tab">Record</span>
+      <span class="tab">Audit</span>
+      <button class="breaker-mark" aria-label="Circuit breaker">
+        <svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="#7A2E1F" stroke-width="1.5">
+          <path d="M13 2.2 C 18.6 1.8, 24.1 6.9, 23.8 13.1 C 23.5 19.4, 18.9 24.2, 12.8 23.8 C 6.8 23.5, 2.1 18.8, 2.3 12.8 C 2.5 6.9, 7.3 2.5, 13 2.2 Z"/>
+          <path d="M9.5 8 v5.5 a3.5 3.5 0 0 0 7 0 V8" stroke-width="1.5"/>
+          <path d="M13 17 v2.5"/>
+        </svg>
+        <span class="label">Breaker</span>
+      </button>
+    </nav>
+
+    <div class="dateline">
+      <h1 class="day">Thursday</h1>
+      <p class="date-sub">12 JUNE 2026 · 26 DHU AL-HIJJAH 1447 · DAY 9 UNDER CONTRACT</p>
+    </div>
+
+    <div class="debt">
+      <p class="debt-text"><strong>Rule 04 — price owed.</strong> <span class="num">$50</span> to charity. <span class="num">14h</span> remain.</p>
+      <button class="debt-action">Mark paid</button>
+    </div>
+
+    <section class="section">
+      <div class="section-head">
+        <span class="label">Pre-market</span>
+        <span class="status">ENTERED 08:46</span>
+      </div>
+      <p class="intention">&ldquo;Take only what the plan gives.&rdquo;</p>
+      <div class="row"><span class="label">Max trades</span><span class="num">3</span></div>
+      <div class="row"><span class="label">Max risk</span><span class="num">$150</span></div>
+      <div class="row"><span class="label">State</span><span class="word">Patient</span></div>
+
+      <div class="composed">
+        <div class="composed-body">CHECK-IN — THU 12 JUN
+Intention: take only what the plan gives.
+Max 3 trades · max risk $150 · state: patient
+Under contract, day 9. The ledger is watching.</div>
+        <button class="btn">Copy for the room</button>
+      </div>
+    </section>
+
+    <section class="evening">
+      <div class="section-head">
+        <span class="label">Post-market</span>
+        <span class="status">CLOSES 16:00</span>
+      </div>
+      <p class="evening-empty">The evening entry opens at the close. Return then.</p>
+    </section>
+
+    <footer class="foot">
+      <span class="label">Integrity</span>
+      <span class="num">94.2 / 100</span>
+    </footer>
+  </div>
+</body>
+</html>

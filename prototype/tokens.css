@@ -1,0 +1,105 @@
+/* THE LEDGER — design tokens (locked) */
+
+:root {
+  --ink: #0F0D09;
+  --paper: #F0E9DB;
+  --gold: #C2A14D;
+  --wax: #7A2E1F;
+
+  /* type scale */
+  --t-11: 11px;
+  --t-13: 13px;
+  --t-15: 15px;
+  --t-18: 18px;
+  --t-24: 24px;
+  --t-34: 34px;
+  --t-52: 52px;
+  --t-84: 84px;
+
+  /* spacing */
+  --s-4: 4px;
+  --s-8: 8px;
+  --s-16: 16px;
+  --s-24: 24px;
+  --s-40: 40px;
+  --s-64: 64px;
+
+  --rule: 0.5px;
+  --border: 1.5px;
+
+  --display: 'Fraunces', 'Georgia', serif;
+  --ui: 'Inter', system-ui, sans-serif;
+  --mono: ui-monospace, 'SF Mono', 'Cascadia Mono', 'Menlo', monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--ui);
+  font-size: var(--t-15);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* paper grain — single SVG noise, ≤6% opacity, light surfaces only */
+.grain::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
+  z-index: 50;
+}
+
+/* ceremonial surfaces: ink ground, paper type */
+.ink-ground {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+/* small caps label — Inter, letterspaced */
+.label {
+  font-family: var(--ui);
+  font-size: var(--t-11);
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* engraved numbers */
+.num {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* the ledger rule — every data row sits on one */
+.ruled {
+  border-bottom: var(--rule) solid currentColor;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.btn {
+  display: block;
+  width: 100%;
+  padding: var(--s-16);
+  font-family: var(--ui);
+  font-size: var(--t-13);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-align: center;
+  border: var(--border) solid currentColor;
+}
+
+.btn-solid-ink { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.btn-solid-paper { background: var(--paper); color: var(--ink); border-color: var(--paper); }

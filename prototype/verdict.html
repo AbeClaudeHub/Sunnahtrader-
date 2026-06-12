@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THE LEDGER — Verdict</title>
+<link rel="stylesheet" href="fonts/fonts.css">
+<link rel="stylesheet" href="tokens.css">
+<style>
+  body { overflow: hidden; }
+  .screen {
+    width: 390px;
+    height: 844px;
+    margin: 0 auto;
+    padding: var(--s-24);
+    display: flex;
+    flex-direction: column;
+  }
+  .masthead {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding-bottom: var(--s-8);
+    border-bottom: var(--rule) solid rgba(240, 233, 219, 0.35);
+  }
+  .masthead .label { color: rgba(240, 233, 219, 0.6); }
+  .masthead .num { font-size: var(--t-11); color: rgba(240, 233, 219, 0.6); letter-spacing: 0.08em; }
+
+  .preline {
+    margin-top: var(--s-40);
+    font-family: var(--display);
+    font-style: italic;
+    font-size: var(--t-18);
+    font-variation-settings: 'opsz' 18;
+    font-weight: 400;
+    color: rgba(240, 233, 219, 0.75);
+  }
+  .verdict-name {
+    font-family: var(--display);
+    font-size: var(--t-84);
+    font-variation-settings: 'opsz' 144;
+    font-weight: 560;
+    letter-spacing: 0.01em;
+    line-height: 1.0;
+    margin-top: var(--s-8);
+    color: var(--paper);
+  }
+  .seconded {
+    margin-top: var(--s-8);
+    font-size: var(--t-11);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(240, 233, 219, 0.6);
+  }
+  .seconded em { font-style: normal; color: var(--gold); }
+
+  .gauges { margin-top: var(--s-40); }
+  .gauges svg { display: block; }
+
+  /* VERSE SLOT: self-accounting — founder may place authenticated text here */
+
+  .profile {
+    margin-top: var(--s-24);
+    font-family: var(--display);
+    font-size: var(--t-15);
+    font-variation-settings: 'opsz' 11;
+    font-weight: 400;
+    line-height: 1.65;
+    color: rgba(240, 233, 219, 0.92);
+  }
+  .profile em { font-style: italic; }
+  .profile-fade {
+    height: 40px;
+    margin-top: -40px;
+    background: linear-gradient(to bottom, rgba(15,13,9,0), var(--ink));
+    position: relative;
+  }
+  .read-on {
+    font-size: var(--t-11);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(240, 233, 219, 0.5);
+    margin-top: var(--s-4);
+  }
+
+  .actions { margin-top: auto; display: flex; flex-direction: column; gap: var(--s-8); }
+  .btn-ghost { color: rgba(240, 233, 219, 0.85); border-color: rgba(240, 233, 219, 0.5); }
+</style>
+</head>
+<body class="ink-ground">
+  <div class="screen">
+    <header class="masthead">
+      <span class="label">The Audit — Verdict</span>
+      <span class="num">16 / 16</span>
+    </header>
+
+    <p class="preline">The ledger has read you.</p>
+    <h1 class="verdict-name">ANGER</h1>
+    <p class="seconded">Dominant saboteur · seconded by <em>Greed</em></p>
+
+    <div class="gauges">
+      <svg id="gauge-svg" width="342" height="178" viewBox="0 0 342 178" role="img"
+           aria-label="Saboteur scores: Ego 5 of 12, Greed 7 of 12, Anger 11 of 12, Doubt 4 of 12"></svg>
+    </div>
+
+    <p class="profile">You don&rsquo;t lose money trading. You lose it <em>after</em> trading &mdash; in the ten minutes following a stop-out, when the loss stops being a number and becomes an insult. You know the voice. <em>They ran my stop. It owes me. Get it back, then stop.</em> So you re-enter the same chart, bigger, at a worse price, and you call it conviction.</p>
+    <div class="profile-fade"></div>
+    <p class="read-on">Read the full verdict ↓</p>
+
+    <div class="actions">
+      <button class="btn btn-ghost">Export the card</button>
+      <button class="btn btn-solid-paper">Write the contract</button>
+    </div>
+  </div>
+
+<script>
+// hand-drawn ink-column gauges: one tremor line per point scored.
+// seeded RNG so the tremor is identical on every render.
+(function () {
+  let seed = 7;
+  function rand() { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }
+  function jitter(a) { return (rand() - 0.5) * 2 * a; }
+
+  // a horizontal line with hand tremor
+  function tremorLine(x1, x2, y, amp) {
+    const segs = 6, pts = [];
+    for (let i = 0; i <= segs; i++) {
+      pts.push([x1 + (x2 - x1) * (i / segs), y + jitter(amp)]);
+    }
+    let d = `M ${pts[0][0].toFixed(1)} ${pts[0][1].toFixed(1)}`;
+    for (let i = 1; i <= segs; i++) {
+      const [px, py] = pts[i - 1], [cx, cy] = pts[i];
+      d += ` Q ${((px + cx) / 2 + jitter(amp)).toFixed(1)} ${((py + cy) / 2 + jitter(amp)).toFixed(1)} ${cx.toFixed(1)} ${cy.toFixed(1)}`;
+    }
+    return d;
+  }
+
+  const svg = document.getElementById('gauge-svg');
+  const NS = 'http://www.w3.org/2000/svg';
+  const data = [
+    { name: 'EGO',   score: 5,  dominant: false },
+    { name: 'GREED', score: 7,  dominant: false },
+    { name: 'ANGER', score: 11, dominant: true  },
+    { name: 'DOUBT', score: 4,  dominant: false },
+  ];
+  const MAX = 12, colW = 342 / 4, lineW = 52, baseY = 138, step = 9;
+
+  data.forEach((d, i) => {
+    const cx = colW * i + colW / 2;
+    const x1 = cx - lineW / 2, x2 = cx + lineW / 2;
+
+    // score, engraved
+    const num = document.createElementNS(NS, 'text');
+    num.setAttribute('x', cx); num.setAttribute('y', baseY - d.score * step - 10);
+    num.setAttribute('text-anchor', 'middle');
+    num.setAttribute('font-family', 'ui-monospace, Menlo, monospace');
+    num.setAttribute('font-size', '13');
+    num.setAttribute('fill', d.dominant ? '#C2A14D' : 'rgba(240,233,219,0.65)');
+    num.textContent = d.score;
+    svg.appendChild(num);
+
+    // one ruled tremor line per point
+    for (let p = 1; p <= d.score; p++) {
+      const path = document.createElementNS(NS, 'path');
+      path.setAttribute('d', tremorLine(x1, x2, baseY - p * step, 1.1));
+      path.setAttribute('stroke', d.dominant ? '#F0E9DB' : 'rgba(240,233,219,0.55)');
+      path.setAttribute('stroke-width', '1.5');
+      path.setAttribute('fill', 'none');
+      path.setAttribute('stroke-linecap', 'round');
+      svg.appendChild(path);
+    }
+
+    // label
+    const lbl = document.createElementNS(NS, 'text');
+    lbl.setAttribute('x', cx); lbl.setAttribute('y', baseY + 22);
+    lbl.setAttribute('text-anchor', 'middle');
+    lbl.setAttribute('font-family', 'Inter, system-ui, sans-serif');
+    lbl.setAttribute('font-size', '11');
+    lbl.setAttribute('letter-spacing', '1.5');
+    lbl.setAttribute('font-weight', '500');
+    lbl.setAttribute('fill', d.dominant ? '#F0E9DB' : 'rgba(240,233,219,0.55)');
+    lbl.textContent = d.name;
+    svg.appendChild(lbl);
+  });
+
+  // the ledger rule — the baseline all four columns sit on
+  const base = document.createElementNS(NS, 'line');
+  base.setAttribute('x1', 0); base.setAttribute('x2', 342);
+  base.setAttribute('y1', baseY); base.setAttribute('y2', baseY);
+  base.setAttribute('stroke', 'rgba(240,233,219,0.45)');
+  base.setAttribute('stroke-width', '0.5');
+  svg.appendChild(base);
+})();
+</script>
+</body>
+</html>
