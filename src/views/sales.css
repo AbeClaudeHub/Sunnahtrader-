@@ -47,17 +47,7 @@
   color: var(--ink-60);
 }
 
-.sales-audit-cta {
-  margin-top: var(--s-16);
-  align-self: flex-start;
-  text-align: left;
-  font-size: var(--t-13);
-  color: var(--ink-60);
-  border-bottom: var(--rule) solid var(--ink-45);
-  padding-bottom: 2px;
-  max-width: 420px;
-  line-height: 1.5;
-}
+.sales-cta-buy { margin-top: var(--s-16); }
 
 .sales-verse {
   margin-top: var(--s-40);
@@ -151,6 +141,7 @@
   border-bottom: var(--rule) solid var(--ink-45);
   padding-bottom: 2px;
 }
+.sales-open + .sales-open { margin-top: var(--s-8); }
 
 .sales-footer {
   margin-top: var(--s-40);

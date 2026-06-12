@@ -57,13 +57,14 @@ export function Sales({ onOpen }: { onOpen: () => void }) {
           For traders in accountability rooms. It writes your daily check-in, holds your rulebook,
           runs your tilt protocol, and keeps the one record you can’t quietly edit.
         </p>
-        <a className="btn btn-solid-ink sales-cta" href={STRIPE_PAYMENT_LINK}>
+        <button className="btn btn-solid-ink sales-cta" onClick={onOpen}>
+          Begin the audit — free
+        </button>
+        <p className="sales-cta-sub num">SIXTEEN QUESTIONS · SEVEN MINUTES · IT NAMES YOUR SABOTEUR</p>
+        <a className="btn sales-cta sales-cta-buy" href={STRIPE_PAYMENT_LINK}>
           Take the ledger — $27
         </a>
         <p className="sales-cta-sub num">ONE PURCHASE · YOURS FOREVER</p>
-        <button className="sales-audit-cta" onClick={onOpen}>
-          Or begin with the audit — sixteen questions, free. It will tell you which of you it’s for.
-        </button>
         <Verse className="sales-verse" {...VERSES.intention} />
       </header>
 
@@ -156,6 +157,9 @@ export function Sales({ onOpen }: { onOpen: () => void }) {
         <a className="btn btn-solid-ink sales-cta" href={STRIPE_PAYMENT_LINK}>
           Take the ledger — $27
         </a>
+        <button className="sales-open label" onClick={onOpen}>
+          Not sure? Begin with the free audit
+        </button>
         <button className="sales-open label" onClick={onOpen}>
           Already sealed in? Open the ledger
         </button>
