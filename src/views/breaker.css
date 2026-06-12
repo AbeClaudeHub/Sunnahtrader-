@@ -7,6 +7,8 @@
   background: var(--ink);
   color: var(--paper);
   overflow-y: auto;
+  overscroll-behavior: contain; /* the scroll never chains to the app behind */
+  -webkit-overflow-scrolling: touch;
   animation: breaker-takeover 280ms ease-out;
 }
 
@@ -17,16 +19,17 @@
 
 .breaker-frame {
   min-height: 200vh; /* the exit lives below the fold — distance is friction */
+  min-height: 200dvh;
   margin: var(--s-8);
   border: var(--border) solid var(--wax);
-  padding: var(--s-24);
+  padding: calc(var(--s-24) + env(safe-area-inset-top, 0px)) var(--s-24) var(--s-24);
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
 }
 
-.breaker-frame-done { min-height: calc(100vh - 16px); }
+.breaker-frame-done { min-height: calc(100vh - 16px); min-height: calc(100dvh - 16px); }
 
 .breaker-head {
   width: 100%;
@@ -125,7 +128,11 @@
 
 .breaker-distance { flex: 1; min-height: 40vh; }
 
-.breaker-exit { width: 100%; max-width: 342px; padding-bottom: var(--s-40); }
+.breaker-exit {
+  width: 100%;
+  max-width: 342px;
+  padding-bottom: calc(var(--s-40) + env(safe-area-inset-bottom, 0px));
+}
 .breaker-exit-label { color: var(--paper-45); }
 .breaker-exit-input {
   margin-top: var(--s-8);
@@ -165,6 +172,6 @@
 .breaker-done-block .breaker-instruction { margin: var(--s-40) auto 0; }
 .breaker-return {
   margin-top: auto;
-  margin-bottom: var(--s-40);
+  margin-bottom: calc(var(--s-40) + env(safe-area-inset-bottom, 0px));
   max-width: 342px;
 }

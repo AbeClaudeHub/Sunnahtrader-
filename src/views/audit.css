@@ -2,6 +2,7 @@
 
 .audit-intro {
   min-height: calc(100vh - 120px);
+  min-height: calc(100dvh - 120px);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -23,7 +24,12 @@
 }
 .audit-begin { margin-top: var(--s-40); }
 
-.audit-q { min-height: calc(100vh - 120px); display: flex; flex-direction: column; }
+.audit-q {
+  min-height: calc(100vh - 120px);
+  min-height: calc(100dvh - 120px);
+  display: flex;
+  flex-direction: column;
+}
 .audit-q-head {
   display: flex;
   justify-content: space-between;
@@ -70,7 +76,9 @@
   border-bottom: var(--rule) solid var(--paper-35);
   font-size: var(--t-15);
   color: var(--paper-90);
+  transition: color 120ms ease;
 }
+.audit-option:active { color: var(--gold); }
 .audit-option:first-child { border-top: var(--rule) solid var(--paper-35); }
 .audit-option-num { font-size: var(--t-11); color: var(--paper-45); }
 .audit-option-chosen { color: var(--gold); }

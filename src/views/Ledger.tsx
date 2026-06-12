@@ -228,6 +228,7 @@ function MorningSection({ day, primary }: { day: DayEntry; primary: boolean }) {
   const state = useLedger();
   const [editing, setEditing] = useState(false);
   const m = day.morning;
+  const composed = m ? composeMorning(state, day) : '';
 
   return (
     <section className="ledger-section">
@@ -247,8 +248,8 @@ function MorningSection({ day, primary }: { day: DayEntry; primary: boolean }) {
           <div className="row"><span className="label">State</span><span>{m.state}</span></div>
           {primary && (
             <div className="composed">
-              <div className="composed-body">{composeMorning(state, day)}</div>
-              <CopyButton text={composeMorning(state, day)}>Copy for the room</CopyButton>
+              <div className="composed-body">{composed}</div>
+              <CopyButton text={composed}>Copy for the room</CopyButton>
             </div>
           )}
           <button className="entry-edit label" onClick={() => setEditing(true)}>
@@ -264,6 +265,7 @@ function EveningSection({ day, primary }: { day: DayEntry; primary: boolean }) {
   const state = useLedger();
   const [editing, setEditing] = useState(false);
   const e = day.evening;
+  const composed = e ? composeEvening(state, day) : '';
 
   if (!primary && !e) {
     return (
@@ -306,8 +308,8 @@ function EveningSection({ day, primary }: { day: DayEntry; primary: boolean }) {
             </span>
           </div>
           <div className="composed">
-            <div className="composed-body">{composeEvening(state, day)}</div>
-            <CopyButton text={composeEvening(state, day)}>Copy for the room</CopyButton>
+            <div className="composed-body">{composed}</div>
+            <CopyButton text={composed}>Copy for the room</CopyButton>
           </div>
           <button className="entry-edit label" onClick={() => setEditing(true)}>
             Amend

@@ -52,7 +52,9 @@ await page.route('http://theledger.test/**', async (route) => {
   await route.fulfill({ status: res.status, headers: { 'content-type': res.headers.get('content-type') ?? '' }, body });
 });
 await page.goto('http://theledger.test/app');
-check('locked /app shows the sealed gate', await page.locator('text=The Ledger is sealed.').isVisible());
+// pre-release: hasAccess() returns true unconditionally. when the gate returns,
+// restore this check to: locator('text=The Ledger is sealed.').isVisible()
+check('pre-release bypass opens /app directly', await page.locator('nav.tabs').isVisible());
 await page.goto('http://theledger.test/app?access=granted');
 check('?access=granted opens the app', await page.locator('nav.tabs').isVisible());
 await page.goto('http://theledger.test/app');

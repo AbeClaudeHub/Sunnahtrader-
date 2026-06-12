@@ -1,24 +1,34 @@
 /* the shell — ledger tabs along the top edge, the breaker always one tap away */
 
-.shell { min-height: 100vh; }
+.shell { min-height: 100vh; min-height: 100dvh; }
 .shell-inner {
   max-width: 720px;
   margin: 0 auto;
-  padding: var(--s-16) var(--s-24) var(--s-24);
+  padding: 0 calc(var(--s-24) + env(safe-area-inset-right, 0px))
+    calc(var(--s-24) + env(safe-area-inset-bottom, 0px))
+    calc(var(--s-24) + env(safe-area-inset-left, 0px));
 }
 
+/* the tab strip holds the top edge while the page scrolls beneath it */
 .tabs {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--paper);
   display: flex;
   gap: var(--s-16);
   align-items: center;
   border-bottom: var(--rule) solid currentColor;
-  padding-bottom: var(--s-8);
+  margin: 0 calc(-1 * var(--s-24));
+  padding: calc(var(--s-16) + env(safe-area-inset-top, 0px)) var(--s-24) var(--s-8);
 }
+.ink-ground .tabs { background: var(--ink); }
 
 .tab {
   color: var(--ink-45);
   padding-bottom: var(--s-8);
   margin-bottom: calc(-1 * var(--s-8) - 0.5px);
+  transition: color 150ms ease;
 }
 .ink-ground .tab { color: var(--paper-45); }
 .tab-active { color: var(--ink); border-bottom: var(--border) solid var(--ink); }
@@ -37,4 +47,4 @@
 /* wax text fails contrast on ink; the seal mark stays wax, the word steps back */
 .ink-ground .breaker-trigger-label { color: var(--paper-60); }
 
-.shell-main { min-height: calc(100vh - 120px); }
+.shell-main { min-height: calc(100vh - 120px); min-height: calc(100dvh - 120px); }

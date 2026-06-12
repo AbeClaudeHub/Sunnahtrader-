@@ -43,6 +43,7 @@
 
 html {
   background: var(--paper);
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -53,6 +54,7 @@ body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
+  min-height: 100dvh;
 }
 
 /* paper grain — the single texture, light surfaces only */
@@ -88,16 +90,23 @@ h1, h2, h3 { font-weight: inherit; font-size: inherit; }
 
 a { color: inherit; }
 
+button, a, input, select, textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
 button {
   font: inherit;
   color: inherit;
   background: none;
   border: none;
   cursor: pointer;
+  touch-action: manipulation; /* no double-tap zoom delay on iOS */
 }
 
 input, textarea, select {
   font: inherit;
+  /* iOS Safari zooms the page when a focused control is under 16px — never shrink below it */
+  font-size: max(1em, 16px);
   color: inherit;
   background: none;
   border: none;
@@ -125,7 +134,9 @@ input::placeholder, textarea::placeholder { color: var(--ink-35); }
   text-align: center;
   border: var(--border) solid currentColor;
   text-decoration: none;
+  transition: transform 120ms ease, opacity 120ms ease;
 }
+.btn:active:not(:disabled) { transform: scale(0.985); }
 
 .btn-solid-ink { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 .btn-solid-paper { background: var(--paper); color: var(--ink); border-color: var(--paper); }

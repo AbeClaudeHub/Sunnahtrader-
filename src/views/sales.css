@@ -3,11 +3,13 @@
 .sales {
   max-width: 720px;
   margin: 0 auto;
-  padding: var(--s-24);
+  padding: calc(var(--s-24) + env(safe-area-inset-top, 0px)) var(--s-24)
+    calc(var(--s-24) + env(safe-area-inset-bottom, 0px));
 }
 
 .sales-hero {
   min-height: 88vh;
+  min-height: 88dvh;
   display: flex;
   flex-direction: column;
   justify-content: center;

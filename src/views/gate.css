@@ -2,10 +2,12 @@
 
 .gate {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--s-24);
+  padding: calc(var(--s-24) + env(safe-area-inset-top, 0px)) var(--s-24)
+    calc(var(--s-24) + env(safe-area-inset-bottom, 0px));
 }
 .gate-inner {
   max-width: 342px;

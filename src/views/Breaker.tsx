@@ -46,6 +46,15 @@ export function Breaker() {
     return () => window.clearInterval(t);
   }, []);
 
+  // the takeover owns the scroll — the app behind it holds still
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, []);
+
   if (!active) return null;
 
   const elapsed = Math.max(0, Math.floor((now - new Date(active.startedAt).getTime()) / 1000));
@@ -197,6 +206,9 @@ export function Breaker() {
             onChange={(e) => setExitTyped(e.target.value)}
             placeholder={EXIT_PHRASE}
             aria-label="Type the early-exit phrase in full"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
           />
           <p className="breaker-exit-warning">Early exit is recorded as a breach.</p>
           <button

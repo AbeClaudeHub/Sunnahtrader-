@@ -79,6 +79,7 @@
   font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  transition: background 150ms ease, color 150ms ease, border-color 150ms ease;
 }
 .entry-yn-on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 .entry-yn-wax { background: var(--wax); color: var(--paper); border-color: var(--wax); }
@@ -89,6 +90,7 @@
   padding: var(--s-8) 0;
   border-bottom: var(--rule) solid var(--ink-35);
   font-size: var(--t-13);
+  transition: color 120ms ease;
 }
 .entry-rule .num { color: var(--ink-60); margin-right: var(--s-4); }
 .entry-rule-broken { color: var(--wax); font-weight: 600; }
