@@ -155,6 +155,15 @@
   100% { transform: scale(1); opacity: 1; }
 }
 
+/* the bridge: from the sealed page to the first entry */
+.contract-bridge { margin-top: var(--s-24); }
+.contract-bridge-line {
+  font-size: var(--t-13);
+  line-height: 1.5;
+  color: var(--ink-60);
+  margin-bottom: var(--s-8);
+}
+
 .contract-doc-actions {
   margin-top: var(--s-16);
   display: flex;

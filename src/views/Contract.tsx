@@ -214,7 +214,7 @@ function Builder({ amending, onDone }: { amending: boolean; onDone: () => void }
   );
 }
 
-function Signed({ onAmend }: { onAmend: () => void }) {
+function Signed({ onAmend, onLedger }: { onAmend: () => void; onLedger: () => void }) {
   const state = useLedger();
   const c = state.contract!;
   const [stamping] = useState(() => {
@@ -222,6 +222,8 @@ function Signed({ onAmend }: { onAmend: () => void }) {
     sessionStorage.removeItem('seal-fresh');
     return fresh;
   });
+  // the contract is the prescription, not the treatment — until the book opens, this page points there
+  const neverLogged = !Object.values(state.days).some((d) => d.morning || d.evening);
 
   return (
     <div className="contract-doc-wrap">
@@ -253,6 +255,18 @@ function Signed({ onAmend }: { onAmend: () => void }) {
         </div>
       </div>
 
+      {neverLogged && (
+        <div className="contract-bridge">
+          <p className="contract-bridge-line">
+            Signed and sealed. A contract earns nothing on this page — the book opens with the
+            first entry.
+          </p>
+          <button className="btn btn-solid-ink" onClick={onLedger}>
+            Make the first entry
+          </button>
+        </div>
+      )}
+
       <div className="contract-doc-actions">
         <button className="btn" onClick={() => exportContractDoc(state)}>
           Export the document
@@ -270,7 +284,7 @@ function Signed({ onAmend }: { onAmend: () => void }) {
   );
 }
 
-export function Contract({ onAudit }: { onAudit: () => void }) {
+export function Contract({ onAudit, onLedger }: { onAudit: () => void; onLedger: () => void }) {
   const state = useLedger();
   const [amending, setAmending] = useState(false);
 
@@ -290,5 +304,5 @@ export function Contract({ onAudit }: { onAudit: () => void }) {
     return <Builder amending={amending} onDone={() => setAmending(false)} />;
   }
 
-  return <Signed onAmend={() => setAmending(true)} />;
+  return <Signed onAmend={() => setAmending(true)} onLedger={onLedger} />;
 }

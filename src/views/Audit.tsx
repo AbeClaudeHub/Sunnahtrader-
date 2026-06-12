@@ -143,6 +143,11 @@ export function Verdict({ onContract }: { onContract: () => void }) {
 
       <div className="verdict-profile">{paragraphs.map(renderItalics)}</div>
 
+      <p className="verdict-bridge">
+        This page is the diagnosis. The contract is the prescription. The daily ledger is the
+        treatment — and the treatment is the only page that counts.
+      </p>
+
       <div className="verdict-actions">
         <button className="btn btn-ghost-paper" onClick={() => exportVerdictCard(state)}>
           Export the card

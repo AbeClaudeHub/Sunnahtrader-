@@ -91,6 +91,10 @@ await page.locator('label:has-text("Rule-breaks per week") input').fill('2');
 await page.getByRole('button', { name: 'Sign and seal' }).click();
 check('signing produces the v1 document', await page.locator('text=The Contract · v1').isVisible());
 check('the seal is stamped', await page.locator('.contract-doc svg').isVisible());
+check('the signed page bridges to the first entry', await page.getByRole('button', { name: 'Make the first entry' }).isVisible());
+await page.getByRole('button', { name: 'Make the first entry' }).click();
+check('the bridge lands on the ledger', await page.locator('.ledger-first').isVisible());
+await page.locator('nav.tabs button:has-text("Contract")').click();
 await page.getByRole('button', { name: /Amend/ }).click();
 await page.getByRole('button', { name: 'Sign and seal' }).click();
 check('amendment becomes v2', await page.locator('text=The Contract · v2').isVisible());
@@ -110,6 +114,10 @@ await page.locator('text=Copied. Post it.').waitFor({ timeout: 2000 }).catch(() 
 check('copy confirms', await page.locator('text=Copied. Post it.').isVisible());
 await page.reload();
 check('morning entry survives a refresh', await page.locator('text=“Only the plan.”').isVisible());
+check('the first-entry lede stands down once the book is open', !(await page.locator('.ledger-first').isVisible()));
+await page.locator('nav.tabs button:has-text("Contract")').click();
+check('the contract bridge stands down too', !(await page.getByRole('button', { name: 'Make the first entry' }).isVisible()));
+await page.locator('nav.tabs button:has-text("Ledger")').click();
 
 await page.clock.fastForward(7 * 3600 * 1000); // to 16:10 — the close
 await page.locator('nav.tabs button:has-text("Record")').click();

@@ -62,7 +62,9 @@ export function AppShell() {
 
         <main className="shell-main">
           {tab === 'ledger' && <Ledger />}
-          {tab === 'contract' && <Contract onAudit={() => setTab('audit')} />}
+          {tab === 'contract' && (
+            <Contract onAudit={() => setTab('audit')} onLedger={() => setTab('ledger')} />
+          )}
           {tab === 'record' && <Record />}
           {tab === 'audit' && <Audit onContract={() => setTab('contract')} />}
         </main>

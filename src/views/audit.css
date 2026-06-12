@@ -134,6 +134,15 @@
 }
 .verdict-profile p + p { margin-top: var(--s-16); }
 
+.verdict-bridge {
+  margin-top: var(--s-24);
+  padding-top: var(--s-8);
+  border-top: var(--rule) solid var(--paper-45);
+  font-size: var(--t-13);
+  line-height: 1.5;
+  color: var(--paper-60);
+}
+
 .verdict-actions {
   margin-top: var(--s-40);
   display: flex;

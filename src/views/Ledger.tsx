@@ -354,6 +354,7 @@ export function Ledger() {
   const eveningPrimary = now.getHours() >= EVENING_HOUR || (!!day.morning && !!day.evening);
   const dayNo = daysUnderContract(state);
   const hijri = hijriDate(d);
+  const neverLogged = !Object.values(state.days).some((x) => x.morning || x.evening);
 
   return (
     <div className="ledger">
@@ -365,6 +366,13 @@ export function Ledger() {
       </div>
 
       <Debts />
+
+      {state.contract && neverLogged && (
+        <p className="ledger-first">
+          The verdict was the diagnosis. This page is the treatment — every market day, entered
+          before the open and closed after the bell.
+        </p>
+      )}
 
       {eveningPrimary ? (
         <>

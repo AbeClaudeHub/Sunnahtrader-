@@ -44,6 +44,16 @@
   border-bottom: var(--rule) solid var(--ink);
 }
 
+/* shown once: from the verdict to the habit, until the first entry exists */
+.ledger-first {
+  margin-top: var(--s-16);
+  font-family: var(--display);
+  font-size: var(--t-15);
+  font-variation-settings: 'opsz' 14;
+  line-height: 1.5;
+  color: var(--ink-60);
+}
+
 .ledger-wax { color: var(--wax); font-weight: 600; }
 
 .composed {
