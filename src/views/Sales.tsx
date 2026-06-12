@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { SealStamped } from '../components/Icons';
+import { Verse, VERSES } from '../components/Verse';
+import { STRIPE_PAYMENT_LINK } from '../lib/access';
 import { formatMoney } from '../lib/dates';
 import './sales.css';
-
-// the founder replaces this with the live Stripe payment link
-const STRIPE_PAYMENT_LINK = 'https://buy.stripe.com/STRIPE_PAYMENT_LINK';
 
 function Payback() {
   const [loss, setLoss] = useState('300');
@@ -49,7 +48,6 @@ function Payback() {
 export function Sales({ onOpen }: { onOpen: () => void }) {
   return (
     <div className="sales grain">
-      {/* VERSE SLOT: intention */}
       <header className="sales-hero">
         <p className="label sales-brand">Niyyah — The Ledger</p>
         <h1 className="sales-h1">
@@ -63,6 +61,10 @@ export function Sales({ onOpen }: { onOpen: () => void }) {
           Take the ledger — $27
         </a>
         <p className="sales-cta-sub num">ONE PURCHASE · YOURS FOREVER</p>
+        <button className="sales-audit-cta" onClick={onOpen}>
+          Or begin with the audit — sixteen questions, free. It will tell you which of you it’s for.
+        </button>
+        <Verse className="sales-verse" {...VERSES.intention} />
       </header>
 
       <section className="sales-section" aria-labelledby="day-h">

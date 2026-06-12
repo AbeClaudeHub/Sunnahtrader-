@@ -59,6 +59,20 @@ export function unpaidBreaches(state: LedgerState): Breach[] {
   return state.breaches.filter((b) => !b.paid);
 }
 
+/** consecutive most-recent logged evenings with no breach of any kind that day */
+export function cleanDayStreak(state: LedgerState): number {
+  const breachDates = new Set(state.breaches.map((b) => b.date));
+  const evenings = Object.values(state.days)
+    .filter((d) => d.evening)
+    .sort((a, b) => (a.date < b.date ? 1 : -1));
+  let streak = 0;
+  for (const d of evenings) {
+    if (breachDates.has(d.date)) break;
+    streak += 1;
+  }
+  return streak;
+}
+
 export interface SavedEstimate {
   weeks: number;
   expected: number;

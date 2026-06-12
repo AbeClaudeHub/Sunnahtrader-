@@ -3,6 +3,7 @@ import { setState, useLedger } from '../store/store';
 import type { Rule } from '../store/types';
 import { RULE_LIBRARY, suggestRules } from '../content/rules';
 import { SealStamped } from '../components/Icons';
+import { hasAccess, STRIPE_PAYMENT_LINK } from '../lib/access';
 import { exportContractDoc } from '../lib/exportCard';
 import { longDate } from '../lib/dates';
 import './contract.css';
@@ -204,11 +205,28 @@ function Builder({ amending, onDone }: { amending: boolean; onDone: () => void }
         </label>
       </div>
 
-      <button className="btn btn-solid-ink contract-sign" disabled={!complete} onClick={sign}>
-        Sign and seal
-      </button>
-      {!complete && (
-        <p className="contract-incomplete">Every rule complete, every field named — then it takes your signature.</p>
+      {hasAccess() ? (
+        <>
+          <button className="btn btn-solid-ink contract-sign" disabled={!complete} onClick={sign}>
+            Sign and seal
+          </button>
+          {!complete && (
+            <p className="contract-incomplete">Every rule complete, every field named — then it takes your signature.</p>
+          )}
+        </>
+      ) : (
+        <div className="contract-gate">
+          <div className="contract-gate-seal"><SealStamped size={56} /></div>
+          <p className="contract-gate-line">The audit was free. The signature is the instrument.</p>
+          <p className="contract-gate-sub">
+            One purchase seals the contract and opens the daily ledger, the circuit breaker, and
+            the record — forever. If you’ve bought it, open the link from your receipt; it carries
+            the key.
+          </p>
+          <a className="btn btn-solid-ink contract-sign" href={STRIPE_PAYMENT_LINK}>
+            Take the ledger — $27
+          </a>
+        </div>
       )}
     </div>
   );

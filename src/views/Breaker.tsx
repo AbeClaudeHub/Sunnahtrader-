@@ -3,6 +3,7 @@ import { setState, useLedger } from '../store/store';
 import type { Breach, LedgerState, Rule } from '../store/types';
 import { todayISO } from '../lib/dates';
 import { SealMark } from '../components/Icons';
+import { Verse, VERSES } from '../components/Verse';
 import './breaker.css';
 
 const TOTAL_SECONDS = 15 * 60;
@@ -192,7 +193,7 @@ export function Breaker() {
           <p className="breaker-step num">STEP {step} / 3</p>
         </div>
 
-        {/* VERSE SLOT: restraint in anger */}
+        <Verse className="breaker-verse" {...VERSES.restraint} />
 
         {/* distance is friction: the exit sits below the fold, by design */}
         <div className="breaker-distance" aria-hidden="true" />

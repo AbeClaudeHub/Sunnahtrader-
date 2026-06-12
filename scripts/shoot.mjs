@@ -44,6 +44,15 @@ const AUDIT = {
   completedAt: '2026-06-03T18:20:00.000Z',
 };
 
+// a prior reading, thirty days older — the verdict reads the two side by side
+const PRIOR_AUDIT = {
+  answers: [3, 2, 2, 3, 3, 2, 1, 2, 3, 1, 2, 3, 1, 3, 2, 1],
+  scores: { ego: 7, greed: 9, anger: 14, doubt: 6 },
+  dominant: 'anger',
+  seconded: 'greed',
+  completedAt: '2026-05-04T18:20:00.000Z',
+};
+
 const RULES = [
   { id: 'r1', libraryId: '07', title: 'The Fifteen', when: 'Any trade stops me out.', then: 'I start the circuit breaker and do not touch the platform until it ends.', noExceptions: '“The re-entry signal is valid right now.”', price: '$50 to charity, and the next session sat out entirely.' },
   { id: 'r2', libraryId: '08', title: 'The Shrinking Hand', when: 'I enter any trade within an hour of a loss.', then: 'I cut that trade’s size to half my standard — set before entry, not after.', noExceptions: '“I need full size to make it back.”', price: '$25 per breach, doubling on the same day.' },
@@ -118,12 +127,12 @@ const EVENING_DONE = {
 const SHOTS = [
   { name: 'sales-hero', url: '/', state: null, time: T_MORNING },
   { name: 'sales-full', url: '/', state: null, time: T_MORNING, fullPage: true },
-  { name: 'gate-sealed', url: '/app', state: null, time: T_MORNING, host: 'theledger.test' },
   { name: 'audit-intro', url: '/app', state: ledgerState({ access: true }), time: T_MORNING },
   { name: 'audit-q01', url: '/app', state: ledgerState({ access: true, auditDraft: { answers: Array(16).fill(null), index: 0 } }), time: T_MORNING },
   { name: 'audit-q09-chosen', url: '/app', state: ledgerState({ access: true, auditDraft: { answers: [3, 1, 2, 2, 3, 1, 1, 2, 3, null, null, null, null, null, null, null], index: 8 } }), time: T_MORNING },
   { name: 'verdict', url: '/app', state: ledgerState({ access: true, audit: AUDIT }), time: T_MORNING, settle: 1400, tab: 'Audit' },
   { name: 'verdict-scrolled', url: '/app', state: ledgerState({ access: true, audit: AUDIT }), time: T_MORNING, settle: 1400, tab: 'Audit', scrollTo: 'bottom' },
+  { name: 'verdict-delta', url: '/app', state: ledgerState({ access: true, audit: AUDIT, audits: [PRIOR_AUDIT], schema: 2 }), time: T_MORNING, settle: 1400, tab: 'Audit' },
   { name: 'contract-builder', url: '/app', state: ledgerState({ access: true, audit: AUDIT }), time: T_MORNING },
   { name: 'contract-signed', url: '/app', state: FULL, time: T_MORNING, tab: 'Contract' },
   { name: 'contract-signed-foot', url: '/app', state: FULL, time: T_MORNING, tab: 'Contract', scrollTo: 'bottom' },
@@ -138,6 +147,7 @@ const SHOTS = [
   { name: 'breaker-exit-zone', url: '/app', state: breakerActive(2.3), time: T_MORNING, scrollTo: 'bottom' },
   { name: 'breaker-done', url: '/app', state: breakerActive(15.2), time: T_MORNING },
   { name: 'record-full', url: '/app', state: FULL, time: T_EVENING, tab: 'Record' },
+  { name: 'record-reread', url: '/app', state: { ...FULL, audit: { ...AUDIT, completedAt: '2026-05-01T18:20:00.000Z' } }, time: T_EVENING, tab: 'Record' },
   { name: 'record-full-foot', url: '/app', state: FULL, time: T_EVENING, tab: 'Record', scrollTo: 'bottom' },
   { name: 'record-empty', url: '/app', state: ledgerState({ access: true, audit: AUDIT }), time: T_MORNING, tab: 'Record' },
 ];

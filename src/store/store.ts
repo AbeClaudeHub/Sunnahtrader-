@@ -2,7 +2,7 @@ import { useSyncExternalStore } from 'react';
 import type { LedgerState } from './types';
 
 const KEY = 'the-ledger-v1';
-const SCHEMA = 1 as const;
+const SCHEMA = 2 as const;
 
 export function defaults(): LedgerState {
   return {
@@ -10,6 +10,7 @@ export function defaults(): LedgerState {
     access: false,
     auditDraft: null,
     audit: null,
+    audits: [],
     contract: null,
     settings: { name: '', avgTiltLoss: 0, baselineBreachesPerWeek: 0 },
     days: {},
@@ -20,7 +21,10 @@ export function defaults(): LedgerState {
 
 // future schema migrations: migrations[n] lifts a state from schema n to n+1
 type Migration = (s: Record<string, unknown>) => Record<string, unknown>;
-const migrations: Record<number, Migration> = {};
+const migrations: Record<number, Migration> = {
+  // 1 → 2: prior audit readings are kept, not overwritten
+  1: (s) => ({ ...s, audits: [], schema: 2 }),
+};
 
 function lift(raw: unknown): LedgerState | null {
   if (typeof raw !== 'object' || raw === null) return null;

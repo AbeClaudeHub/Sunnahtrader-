@@ -1,8 +1,7 @@
 import { StrictMode, useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { getState, setState } from './store/store';
+import { captureAccess } from './lib/access';
 import { Sales } from './views/Sales';
-import { Gate } from './views/Gate';
 import { AppShell } from './views/AppShell';
 import './styles/tokens.css';
 
@@ -23,17 +22,8 @@ function navigate(to: Route) {
   }
 }
 
-function hasAccess(): boolean {
-  return true; // pre-release: gate off — remove this line before launch
-  const params = new URLSearchParams(location.search);
-  if (params.get('access') === 'granted') {
-    if (!getState().access) setState({ access: true });
-    return true;
-  }
-  if (getState().access) return true;
-  const h = location.hostname;
-  return location.protocol === 'file:' || h === 'localhost' || h === '127.0.0.1';
-}
+// the door is open: the audit is free. payment gates the signature, inside the contract.
+captureAccess();
 
 function Root() {
   const [route, setRoute] = useState<Route>(readRoute);
@@ -49,7 +39,7 @@ function Root() {
   }, []);
 
   if (route === 'sales') return <Sales onOpen={() => navigate('app')} />;
-  return hasAccess() ? <AppShell /> : <Gate />;
+  return <AppShell />;
 }
 
 createRoot(document.getElementById('root')!).render(

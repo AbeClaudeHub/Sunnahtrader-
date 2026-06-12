@@ -81,6 +81,33 @@
 
 .contract-stakes { margin-top: var(--s-40); }
 .contract-sign { margin-top: var(--s-40); }
+
+/* the seal between verdict and signature — the only paywall in the house */
+.contract-gate {
+  margin-top: var(--s-40);
+  border: var(--border) solid var(--ink);
+  padding: var(--s-24);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.contract-gate-line {
+  margin-top: var(--s-16);
+  font-family: var(--display);
+  font-size: var(--t-24);
+  font-variation-settings: 'opsz' 30;
+  font-weight: 540;
+  line-height: 1.25;
+}
+.contract-gate-sub {
+  margin-top: var(--s-8);
+  font-size: var(--t-13);
+  line-height: 1.6;
+  color: var(--ink-60);
+  max-width: 420px;
+}
+.contract-gate .contract-sign { width: 100%; max-width: 342px; }
 .contract-incomplete {
   margin-top: var(--s-8);
   font-size: var(--t-13);

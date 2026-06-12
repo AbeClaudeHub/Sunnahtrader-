@@ -1,6 +1,8 @@
 import { useRef, useState } from 'react';
 import { exportJSON, importJSON, useLedger } from '../store/store';
+import { rerunAudit } from './Audit';
 import {
+  cleanDayStreak,
   daysUnderContract,
   integrityScore,
   missedDays,
@@ -49,7 +51,7 @@ function DaysStrip() {
   );
 }
 
-export function Record() {
+export function Record({ onReaudit }: { onReaudit: () => void }) {
   const state = useLedger();
   const fileRef = useRef<HTMLInputElement>(null);
   const [importMsg, setImportMsg] = useState<string | null>(null);
@@ -61,6 +63,10 @@ export function Record() {
   const rules = state.contract?.current.rules ?? [];
   const week = weekSummary(state, new Date());
   const loggedCount = Object.values(state.days).filter((d) => d.morning || d.evening).length;
+  const cleanStreak = cleanDayStreak(state);
+  const daysSinceRead = state.audit
+    ? Math.floor((Date.now() - new Date(state.audit.completedAt).getTime()) / 86400000)
+    : 0;
 
   function onImport(file: File) {
     const reader = new FileReader();
@@ -104,6 +110,10 @@ export function Record() {
           <span className="num">{loggedCount}</span>
         </div>
         <div className="row">
+          <span className="label">Clean days, in a row</span>
+          <span className="num">{cleanStreak}</span>
+        </div>
+        <div className="row">
           <span className="label">Breaches, all time</span>
           <span className={`num${state.breaches.length > 0 ? ' record-wax' : ''}`}>
             {state.breaches.length}
@@ -114,6 +124,28 @@ export function Record() {
           <span className="num">{state.breaker.sessions.filter((s) => s.completed).length}</span>
         </div>
       </section>
+
+      {state.audit && daysSinceRead >= 30 && (
+        <section className="record-section">
+          <div className="section-head">
+            <span className="label">The re-reading</span>
+            <span className="status num">{daysSinceRead} DAYS SINCE</span>
+          </div>
+          <p className="record-reread">
+            Your last reading is {daysSinceRead} days old. Run the audit again and the verdict
+            reads the two side by side — movement, measured, in either direction.
+          </p>
+          <button
+            className="btn record-btn"
+            onClick={() => {
+              rerunAudit();
+              onReaudit();
+            }}
+          >
+            Re-run the audit
+          </button>
+        </section>
+      )}
 
       {rules.length > 0 && (
         <section className="record-section">

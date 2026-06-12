@@ -126,6 +126,12 @@
   color: var(--paper-75);
 }
 
+.breaker-verse {
+  margin-top: var(--s-64);
+  width: 100%;
+  max-width: 320px;
+}
+
 .breaker-distance { flex: 1; min-height: 40vh; }
 
 .breaker-exit {

@@ -43,6 +43,13 @@
 }
 
 .record-btn { margin-top: var(--s-16); }
+
+.record-reread {
+  margin-top: var(--s-8);
+  font-size: var(--t-13);
+  line-height: 1.6;
+  color: var(--ink-60);
+}
 .record-data-actions { display: flex; flex-direction: column; }
 .record-import-msg {
   margin-top: var(--s-8);

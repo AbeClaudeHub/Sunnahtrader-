@@ -1,6 +1,6 @@
 import type { DayEntry, LedgerState } from '../store/types';
 import { fromISO, shortDate } from './dates';
-import { daysUnderContract } from './stats';
+import { cleanDayStreak, daysUnderContract } from './stats';
 
 export function composeMorning(state: LedgerState, day: DayEntry): string {
   const m = day.morning;
@@ -40,6 +40,8 @@ export function composeEvening(state: LedgerState, day: DayEntry): string {
     }
   }
   lines.push(`One line: ${e.honestLine}`);
+  const streak = cleanDayStreak(state);
+  if (streak >= 3) lines.push(`${streak} clean days in a row.`);
   if (dayNo > 0) lines.push(`Day ${dayNo} under contract.`);
   return lines.join('\n');
 }

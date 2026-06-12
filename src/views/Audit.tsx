@@ -1,11 +1,23 @@
 import { useEffect, useRef, useState } from 'react';
 import { setState, useLedger } from '../store/store';
+import type { SaboteurId } from '../store/types';
 import { QUESTIONS, SCALE } from '../content/questions';
 import { PROFILES, SABOTEUR_NAMES } from '../content/profiles';
 import { scoreAudit } from '../lib/score';
 import { Gauges } from '../components/Gauges';
+import { Verse, VERSES } from '../components/Verse';
 import { exportVerdictCard } from '../lib/exportCard';
+import { shortDate } from '../lib/dates';
 import './audit.css';
+
+/** re-running never erases: the old reading moves to the shelf, and the next verdict reads both */
+export function rerunAudit() {
+  setState((s) => ({
+    audits: s.audit ? [...s.audits, s.audit] : s.audits,
+    audit: null,
+    auditDraft: { answers: Array(16).fill(null), index: 0 },
+  }));
+}
 
 function Intro({ onBegin }: { onBegin: () => void }) {
   return (
@@ -94,6 +106,18 @@ export function Verdict({ onContract }: { onContract: () => void }) {
   }, []);
 
   const paragraphs = PROFILES[audit.dominant].split('\n\n');
+  const prev = state.audits.length > 0 ? state.audits[state.audits.length - 1] : null;
+  const ORDER: SaboteurId[] = ['ego', 'greed', 'anger', 'doubt'];
+
+  function deltaLine(): string {
+    if (!prev) return '';
+    const moved = audit.scores[prev.dominant] - prev.scores[prev.dominant];
+    if (moved < 0)
+      return `${SABOTEUR_NAMES[prev.dominant]} gave back ${Math.abs(moved)} ${Math.abs(moved) === 1 ? 'point' : 'points'}. That isn’t luck — that’s the entries.`;
+    if (moved > 0)
+      return `${SABOTEUR_NAMES[prev.dominant]} gained ground. Read your contract again tonight, and amend what stopped holding.`;
+    return 'No movement on the dominant line. The record is patient.';
+  }
 
   function renderItalics(text: string, key: number) {
     const parts = text.split('*');
@@ -121,7 +145,29 @@ export function Verdict({ onContract }: { onContract: () => void }) {
         <Gauges scores={audit.scores} dominant={audit.dominant} animate={reveal} />
       </div>
 
-      {/* VERSE SLOT: self-accounting */}
+      {prev && (
+        <div className="verdict-delta">
+          <div className="section-head">
+            <span className="label">Against your last reading</span>
+            <span className="status num">{shortDate(new Date(prev.completedAt))}</span>
+          </div>
+          {ORDER.map((s) => {
+            const d = audit.scores[s] - prev.scores[s];
+            return (
+              <div className="row" key={s}>
+                <span className="label">{SABOTEUR_NAMES[s]}</span>
+                <span className="num">
+                  {prev.scores[s]} → {audit.scores[s]}
+                  {d !== 0 ? ` (${d > 0 ? '+' : '−'}${Math.abs(d)})` : ''}
+                </span>
+              </div>
+            );
+          })}
+          <p className="verdict-delta-line">{deltaLine()}</p>
+        </div>
+      )}
+
+      <Verse className="verdict-verse" {...VERSES.accounting} />
 
       <div className="verdict-profile">{paragraphs.map(renderItalics)}</div>
 
@@ -132,12 +178,7 @@ export function Verdict({ onContract }: { onContract: () => void }) {
         <button className="btn btn-solid-paper" onClick={onContract}>
           {state.contract ? 'View the contract' : 'Write the contract'}
         </button>
-        <button
-          className="verdict-retake label"
-          onClick={() => {
-            setState({ audit: null, auditDraft: { answers: Array(16).fill(null), index: 0 } });
-          }}
-        >
+        <button className="verdict-retake label" onClick={rerunAudit}>
           Re-run the audit
         </button>
       </div>

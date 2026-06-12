@@ -124,6 +124,22 @@
 
 .verdict-gauges { margin-top: var(--s-40); }
 
+/* the second reading — two audits, side by side. this is the proof of movement */
+.verdict-delta { margin-top: var(--s-40); }
+.verdict-delta .row { border-color: var(--paper-35); }
+.verdict-delta .row .label { color: var(--paper-60); }
+.verdict-delta-line {
+  margin-top: var(--s-16);
+  font-family: var(--display);
+  font-style: italic;
+  font-size: var(--t-18);
+  font-variation-settings: 'opsz' 18;
+  line-height: 1.4;
+  color: var(--gold);
+}
+
+.verdict-verse { margin-top: var(--s-40); }
+
 .verdict-profile {
   margin-top: var(--s-24);
   font-family: var(--display);

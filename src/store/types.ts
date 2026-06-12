@@ -89,10 +89,11 @@ export interface Settings {
 }
 
 export interface LedgerState {
-  schema: 1;
+  schema: 2;
   access: boolean;
   auditDraft: AuditDraft | null;
   audit: AuditResult | null;
+  audits: AuditResult[]; // prior readings, oldest first — the proof of movement
   contract: Contract | null;
   settings: Settings;
   days: Record<string, DayEntry>;
