@@ -34,5 +34,7 @@
   color: var(--wax);
 }
 .breaker-trigger-label { font-size: 9px; letter-spacing: 0.18em; }
+/* wax text fails contrast on ink; the seal mark stays wax, the word steps back */
+.ink-ground .breaker-trigger-label { color: var(--paper-60); }
 
 .shell-main { min-height: calc(100vh - 120px); }

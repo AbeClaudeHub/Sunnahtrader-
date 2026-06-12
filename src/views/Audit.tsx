@@ -88,11 +88,9 @@ export function Verdict({ onContract }: { onContract: () => void }) {
 
   useEffect(() => {
     sessionStorage.setItem('verdict-seen', '1');
-    const el = document.querySelector('.app-scroll');
-    const target = el ?? window;
     const onScroll = () => setFadeGone(true);
-    target.addEventListener('scroll', onScroll, { passive: true, once: true });
-    return () => target.removeEventListener('scroll', onScroll);
+    window.addEventListener('scroll', onScroll, { passive: true, once: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   const paragraphs = PROFILES[audit.dominant].split('\n\n');

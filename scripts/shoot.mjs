@@ -139,7 +139,7 @@ const SHOTS = [
   { name: 'breaker-done', url: '/app', state: breakerActive(15.2), time: T_MORNING },
   { name: 'record-full', url: '/app', state: FULL, time: T_EVENING, tab: 'Record' },
   { name: 'record-full-foot', url: '/app', state: FULL, time: T_EVENING, tab: 'Record', scrollTo: 'bottom' },
-  { name: 'record-empty', url: '/app', state: ledgerState({ access: true }), time: T_MORNING, tab: 'Record', skipTabCheck: true },
+  { name: 'record-empty', url: '/app', state: ledgerState({ access: true, audit: AUDIT }), time: T_MORNING, tab: 'Record' },
 ];
 
 const VIEWPORTS = [

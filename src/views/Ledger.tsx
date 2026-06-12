@@ -13,11 +13,10 @@ function CopyButton({ text, children }: { text: string; children: string }) {
   return (
     <button
       className="btn composed-copy"
-      onClick={async () => {
-        if (await copyText(text)) {
-          setCopied(true);
-          setTimeout(() => setCopied(false), 1600);
-        }
+      onClick={() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1600);
+        void copyText(text);
       }}
     >
       {copied ? 'Copied. Post it.' : children}

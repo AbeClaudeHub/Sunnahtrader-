@@ -12,7 +12,13 @@
   flex-direction: column;
   justify-content: center;
 }
-.sales-brand { color: var(--gold); }
+.sales-hero::before {
+  content: '';
+  width: 40px;
+  border-top: var(--border) solid var(--gold);
+  margin-bottom: var(--s-16);
+}
+.sales-brand { color: var(--ink-60); }
 .sales-h1 {
   margin-top: var(--s-16);
   font-family: var(--display);

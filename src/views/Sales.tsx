@@ -62,7 +62,7 @@ export function Sales({ onOpen }: { onOpen: () => void }) {
         <a className="btn btn-solid-ink sales-cta" href={STRIPE_PAYMENT_LINK}>
           Take the ledger — $27
         </a>
-        <p className="sales-cta-sub num">ONE PURCHASE · YOURS FOREVER · NO SUBSCRIPTION</p>
+        <p className="sales-cta-sub num">ONE PURCHASE · YOURS FOREVER</p>
       </header>
 
       <section className="sales-section" aria-labelledby="day-h">

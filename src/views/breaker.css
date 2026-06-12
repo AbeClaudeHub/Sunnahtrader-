@@ -34,7 +34,7 @@
   justify-content: space-between;
   align-items: center;
 }
-.breaker-label { color: var(--wax); }
+.breaker-label { color: var(--paper-60); }
 .breaker-seal { color: var(--wax); flex-shrink: 0; }
 
 .breaker-clockwrap { margin-top: 18vh; }
@@ -142,11 +142,11 @@
   margin-top: var(--s-8);
   font-size: var(--t-11);
   letter-spacing: 0.08em;
-  color: var(--wax);
+  color: var(--paper-75);
 }
 .breaker-exit-btn {
   margin-top: var(--s-16);
-  color: var(--wax);
+  color: var(--paper-75);
   border-color: var(--wax);
 }
 

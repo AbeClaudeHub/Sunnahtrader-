@@ -71,7 +71,7 @@ export function Record() {
     reader.readAsText(file);
   }
 
-  if (!state.contract && loggedCount === 0 && !state.audit) {
+  if (!state.contract && loggedCount === 0) {
     return (
       <div className="record-empty">
         <p className="record-empty-line">No entries. The record begins the morning you do.</p>
