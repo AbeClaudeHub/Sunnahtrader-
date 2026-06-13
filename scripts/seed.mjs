@@ -100,12 +100,12 @@ const SCRIPT = [
   ['2026-06-02', 'patient', 3, 3, [], 'Three and the bell.'],
   ['2026-06-03', 'patient', 3, 2, [], 'Nothing forced.'],
   ['2026-06-04', 'steady', 3, 2, [], 'Boring is the point.'],
-  ['2026-06-05', 'patient', 3, 3, [], 'Took all three. Stopped at three.'],
+  ['2026-06-05', 'patient', 3, 3, [], 'Three trades, then the bell. Kept the bell.'],
   ['2026-06-08', 'tight', 2, 4, ['r1', 'r5'], 'Monday. Same trap, same price. It is on the page now.'],
   ['2026-06-09', 'humble', 2, 1, [], 'Half size. One trade.'],
   ['2026-06-10', 'patient', 3, 2, [], 'The plan gave two. I took two.'],
-  ['2026-06-11', 'patient', 3, 2, [], 'Two clean entries. Left the third alone.'],
-  ['2026-06-12', 'patient', 3, 2, [], 'Forced nothing. Took the A setup, left.'],
+  ['2026-06-11', 'patient', 3, 2, [], 'Two planned entries, nothing else. Quiet day.'],
+  ['2026-06-12', 'patient', 3, 2, [], 'Took what the plan gave and closed the book.'],
 ];
 
 const INTENTIONS = {

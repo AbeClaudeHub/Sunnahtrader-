@@ -5,7 +5,7 @@ interface IconProps {
   className?: string;
 }
 
-/** the seal mark — outline form, used for the circuit breaker control */
+/** the seal mark — outline form of the one seal, used for the circuit breaker control */
 export function SealMark({ size = 26, className }: IconProps) {
   return (
     <svg
@@ -19,8 +19,19 @@ export function SealMark({ size = 26, className }: IconProps) {
       aria-hidden="true"
     >
       <path d="M13 2.2 C 18.6 1.8, 24.1 6.9, 23.8 13.1 C 23.5 19.4, 18.9 24.2, 12.8 23.8 C 6.8 23.5, 2.1 18.8, 2.3 12.8 C 2.5 6.9, 7.3 2.5, 13 2.2 Z" />
-      <path d="M9.5 8 v5.5 a3.5 3.5 0 0 0 7 0 V8" />
-      <path d="M13 17 v2.5" />
+      <text
+        x="13"
+        y="13.5"
+        textAnchor="middle"
+        dominantBaseline="central"
+        fontFamily="Fraunces, Georgia, serif"
+        fontSize="13"
+        fontWeight="560"
+        fill="currentColor"
+        stroke="none"
+      >
+        N
+      </text>
     </svg>
   );
 }
