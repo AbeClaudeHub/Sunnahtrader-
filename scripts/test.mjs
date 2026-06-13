@@ -227,7 +227,7 @@ const overDays = {
 };
 eq('over-max finding compares the two columns',
   patterns.overMaxFinding(state({ days: overDays })).text,
-  'You went past your own max trades on two days; one of them ended in a breach. You stayed within it on one.');
+  'You went past your own max trades on two days; one of them ended in a breach. You stayed within it on the other one.');
 
 const runState = state({
   contract: contract([[1, R5, '2026-06-01T13:00:00.000Z']]),

@@ -107,7 +107,7 @@ export function overMaxFinding(state: LedgerState): Finding | null {
     text:
       `You went past your own max trades on ${spell(over.length)} days; ` +
       `${spell(overBreached)} of them ended in a breach. ` +
-      `You stayed within it on ${spell(within)}.`,
+      `You stayed within it on the other ${spell(within)}.`,
   };
 }
 
