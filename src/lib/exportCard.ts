@@ -309,17 +309,26 @@ function richWrap(
 
 function drawSeal(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
   const rand = seededRand(31);
-  // irregular wax blob
+  // irregular wax blob — curved through the bumps so the edge reads as poured, not cut
   ctx.fillStyle = WAX;
-  ctx.beginPath();
-  const bumps = 14;
-  for (let i = 0; i <= bumps; i++) {
+  const bumps = 16;
+  const pts: Array<[number, number]> = [];
+  for (let i = 0; i < bumps; i++) {
     const a = (i / bumps) * Math.PI * 2;
-    const rr = r * (0.92 + rand() * 0.16);
-    const x = cx + Math.cos(a) * rr;
-    const y = cy + Math.sin(a) * rr;
-    if (i === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
+    const rr = r * (0.93 + rand() * 0.12);
+    pts.push([cx + Math.cos(a) * rr, cy + Math.sin(a) * rr]);
+  }
+  ctx.beginPath();
+  const mid = (p: [number, number], q: [number, number]): [number, number] => [
+    (p[0] + q[0]) / 2,
+    (p[1] + q[1]) / 2,
+  ];
+  let m = mid(pts[bumps - 1], pts[0]);
+  ctx.moveTo(m[0], m[1]);
+  for (let i = 0; i < bumps; i++) {
+    const next = pts[(i + 1) % bumps];
+    m = mid(pts[i], next);
+    ctx.quadraticCurveTo(pts[i][0], pts[i][1], m[0], m[1]);
   }
   ctx.closePath();
   ctx.fill();

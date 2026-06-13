@@ -154,6 +154,11 @@ export function Sales({ onOpen }: { onOpen: () => void }) {
         <a className="btn btn-solid-ink sales-cta" href={STRIPE_PAYMENT_LINK}>
           Take the ledger — $27
         </a>
+        <p className="sales-close-note">
+          It runs in your browser and writes only to your device. No account, no server,
+          no one reading over your shoulder. The record answers to you alone — export it,
+          keep it, it is yours.
+        </p>
         <button className="sales-open label" onClick={onOpen}>
           Already sealed in? Open the ledger
         </button>
