@@ -10,16 +10,22 @@ import './audit.css';
 function Intro({ onBegin }: { onBegin: () => void }) {
   return (
     <div className="audit-intro">
-      <p className="audit-intro-line">
-        Before you write a single rule, the ledger reads you.
-      </p>
-      <p className="audit-intro-sub">
-        Sixteen questions. Each one is a private behavior — answer for what you have actually
-        done, not what you intend. Seven minutes. No one sees this but you.
-      </p>
-      <button className="btn btn-solid-paper audit-begin" onClick={onBegin}>
-        Begin the audit
-      </button>
+      <div className="audit-intro-body">
+        <p className="audit-intro-line">
+          Before you write a single rule, the ledger reads you.
+        </p>
+        <p className="audit-intro-sub">
+          Sixteen questions. Each one is a private behavior — answer for what you have actually
+          done, not what you intend. Seven minutes. No one sees this but you.
+        </p>
+        <button className="btn btn-solid-paper audit-begin" onClick={onBegin}>
+          Begin the audit
+        </button>
+      </div>
+      <footer className="audit-foot">
+        <span className="label">The Audit</span>
+        <span className="label audit-foot-mark">Niyyah</span>
+      </footer>
     </div>
   );
 }
@@ -64,18 +70,25 @@ function Questions() {
           {q.text}
         </p>
         <div className="audit-scale" role="group" aria-label="How often is this you?">
-          {SCALE.map((s, v) => (
-            <button
-              key={s}
-              className={`audit-option${draft.answers[i] === v ? ' audit-option-chosen' : ''}`}
-              onClick={() => answer(v)}
-            >
-              <span>{s}</span>
-              <span className="num audit-option-num">{v}</span>
-            </button>
-          ))}
+          {SCALE.map((s, v) => {
+            const chosen = draft.answers[i] === v;
+            return (
+              <button
+                key={s}
+                className={`audit-option${chosen ? ' audit-option-chosen' : ''}`}
+                aria-pressed={chosen}
+                onClick={() => answer(v)}
+              >
+                <span>{s}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
+      <footer className="audit-foot">
+        <span className="label">The Audit</span>
+        <span className="label audit-foot-mark">Niyyah</span>
+      </footer>
     </div>
   );
 }

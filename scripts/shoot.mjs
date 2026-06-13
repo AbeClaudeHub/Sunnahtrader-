@@ -59,7 +59,9 @@ const EVENING_DONE = {
 const SHOTS = [
   { name: 'sales-hero', url: '/', state: null, time: T_MORNING },
   { name: 'sales-full', url: '/', state: null, time: T_MORNING, fullPage: true },
-  { name: 'gate-sealed', url: '/app', state: null, time: T_MORNING, host: 'theledger.test' },
+  // pre-release: the gate is intentionally off, so /app falls through to the audit.
+  // when the gate returns at launch, rename this back to gate-sealed and re-judge it.
+  { name: 'prerelease-bypass', url: '/app', state: null, time: T_MORNING, host: 'theledger.test' },
   { name: 'audit-intro', url: '/app', state: ledgerState({ access: true }), time: T_MORNING },
   { name: 'audit-q01', url: '/app', state: ledgerState({ access: true, auditDraft: { answers: Array(16).fill(null), index: 0 } }), time: T_MORNING },
   { name: 'audit-q09-chosen', url: '/app', state: ledgerState({ access: true, auditDraft: { answers: [3, 1, 2, 2, 3, 1, 1, 2, 3, null, null, null, null, null, null, null], index: 8 } }), time: T_MORNING },

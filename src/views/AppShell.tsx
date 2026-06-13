@@ -76,9 +76,14 @@ export function AppShell() {
               );
             })}
           </div>
-          <button className="breaker-trigger" aria-label="Start the circuit breaker" onClick={startBreaker}>
-            <SealMark />
-            <span className="label breaker-trigger-label">Breaker</span>
+          {/* the wax seal alone is the trigger — the strip keeps one baseline */}
+          <button
+            className="breaker-trigger"
+            aria-label="Start the circuit breaker"
+            title="Circuit breaker"
+            onClick={startBreaker}
+          >
+            <SealMark size={28} />
           </button>
         </nav>
 

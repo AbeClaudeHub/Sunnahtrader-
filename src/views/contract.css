@@ -10,12 +10,12 @@
 .contract-masthead .label { color: var(--ink-60); }
 .contract-masthead .num { font-size: var(--t-11); color: var(--ink-60); }
 
+/* instruction is UI voice — Fraunces is reserved for the ledger speaking */
 .contract-lede {
   margin-top: var(--s-16);
-  font-family: var(--display);
-  font-size: var(--t-18);
-  font-variation-settings: 'opsz' 18;
-  line-height: 1.45;
+  font-size: var(--t-15);
+  line-height: 1.55;
+  color: var(--ink-60);
 }
 
 .slot {

@@ -43,6 +43,12 @@ export function shortDate(d: Date): string {
     .toUpperCase()}`;
 }
 
+/** "9 JUN" — the compact form for ruled rows and chips */
+export function compactDate(iso: string): string {
+  const d = fromISO(iso);
+  return `${d.getDate()} ${MONTHS[d.getMonth()].slice(0, 3).toUpperCase()}`;
+}
+
 /** "26 DHU AL-HIJJAH 1447" — the calendar, not scripture; empty string if unsupported */
 export function hijriDate(d: Date): string {
   try {

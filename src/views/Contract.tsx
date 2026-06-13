@@ -92,7 +92,7 @@ function Slot({ rule, index, onChange }: SlotProps) {
       )}
 
       <label className="slot-swap">
-        <span className="label slot-swap-label">Swap</span>
+        <span className="label slot-swap-label">From the library</span>
         <select
           value={rule.libraryId ?? 'own'}
           onChange={(e) => pick(e.target.value)}

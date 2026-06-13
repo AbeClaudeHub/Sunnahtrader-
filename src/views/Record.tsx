@@ -8,7 +8,7 @@ import {
   ruleCleanStreak,
   weekSummary,
 } from '../lib/stats';
-import { formatMoney, marketDaysBetween, todayISO } from '../lib/dates';
+import { compactDate, formatMoney, marketDaysBetween, todayISO } from '../lib/dates';
 import { contractStartISO } from '../lib/stats';
 import { eveningsUntilFindings, findings } from '../lib/patterns';
 import { exportTextRecord, downloadText, exportWeeklyCard } from '../lib/exportCard';
@@ -166,7 +166,7 @@ export function Record() {
           [...state.breaches].reverse().map((b) => (
             <div className="row" key={b.id}>
               <span className="record-breach-name">
-                <span className="num record-rule-no">{b.date.slice(5).replace('-', '.')}</span> {b.ruleTitle}
+                <span className="num record-rule-no">{compactDate(b.date)}</span> {b.ruleTitle}
               </span>
               <span className={b.paid ? 'record-paid label' : 'record-owed label'}>
                 {b.paid ? 'Paid' : 'Owed'}

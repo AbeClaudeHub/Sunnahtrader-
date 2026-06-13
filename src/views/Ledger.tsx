@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { setState, useLedger } from '../store/store';
 import type { Breach, DayEntry, EveningEntry, MorningEntry } from '../store/types';
-import { hijriDate, longDate, todayISO, weekdayName, fromISO } from '../lib/dates';
+import { compactDate, hijriDate, longDate, todayISO, weekdayName, fromISO } from '../lib/dates';
 import { composeEvening, composeMorning, copyText } from '../lib/compose';
 import { daysUnderContract, unpaidBreaches } from '../lib/stats';
 import './ledger.css';
@@ -34,7 +34,7 @@ function Debts() {
         <div className="debt" key={b.id}>
           <p className="debt-text">
             <strong>{b.ruleTitle} — price owed.</strong> {b.price}{' '}
-            <span className="num">({b.date.slice(5).replace('-', '.')})</span>
+            <span className="num">({compactDate(b.date)})</span>
           </p>
           <button
             className="debt-action"

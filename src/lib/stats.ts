@@ -114,6 +114,7 @@ export interface DayMark {
   iso: string;
   logged: boolean;
   breached: boolean;
+  breachCount: number;
 }
 
 export interface WeekSummary {
@@ -162,10 +163,12 @@ export function weekSummary(state: LedgerState, anchor: Date): WeekSummary {
 
   const dayMarks: DayMark[] = week.map((iso) => {
     const d = state.days[iso];
+    const count = breaches.filter((b) => b.date === iso).length;
     return {
       iso,
       logged: !!(d && (d.morning || d.evening)),
       breached: breachDates.has(iso),
+      breachCount: count,
     };
   });
 

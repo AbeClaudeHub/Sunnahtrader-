@@ -187,6 +187,7 @@ eq('week daysLogged', ws.daysLogged, 3);
 eq('week integrity', ws.integrity, 93.3); // 14/15
 eq('week dayMarks logged flags', ws.dayMarks.map((m) => m.logged), [true, false, true, false, true]);
 eq('week dayMarks breach flags', ws.dayMarks.map((m) => m.breached), [true, false, false, false, false]);
+eq('week dayMarks count each breach', ws.dayMarks.map((m) => m.breachCount), [1, 0, 0, 0, 0]);
 eq('week cleanRules', ws.cleanRules, 4);
 
 // ---------- patterns ----------

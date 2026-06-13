@@ -357,22 +357,18 @@ export async function exportContractDoc(state: LedgerState): Promise<void> {
   grain(ctx, false);
   plate(ctx, false);
 
-  ctx.fillStyle = inkA(0.6);
-  ctx.font = '500 24px Inter';
-  ctx.textAlign = 'center';
-  track(ctx, 3.4);
-  ctx.fillText(`THE CONTRACT · V${c.current.version}`, W / 2, 142);
-  track(ctx, 0);
+  masthead(ctx, false, `THE CONTRACT — V${c.current.version}`, longDate(new Date(c.current.signedAt)));
 
   ctx.fillStyle = INK;
-  ctx.font = '560 72px Fraunces';
-  ctx.fillText('Five Rules. No Exceptions.', W / 2, 238);
+  ctx.font = '560 64px Fraunces';
+  ctx.textAlign = 'center';
+  ctx.fillText('Five Rules. No Exceptions.', W / 2, 268);
   ctx.textAlign = 'left';
 
   // the rules must fit between the title and the signature — measure, then
   // step the scale down until they do. the signature block is reserved ground.
-  const top = 312;
-  const sigTop = H - 264;
+  const top = 348;
+  const sigTop = H - 318;
   const bodyX = 176;
   const bodyW = W - MX - bodyX;
 
@@ -387,7 +383,7 @@ export async function exportContractDoc(state: LedgerState): Promise<void> {
         ctx.font = `560 ${Math.round(36 * s)}px Fraunces`;
         ctx.fillText(r.title, bodyX, y);
       }
-      y += 44 * s;
+      y += 42 * s;
       y = richWrap(
         ctx,
         [
@@ -395,18 +391,7 @@ export async function exportContractDoc(state: LedgerState): Promise<void> {
           { text: r.when },
           { text: ' THEN', k: true },
           { text: r.then },
-        ],
-        bodyX,
-        y,
-        bodyW,
-        s,
-        draw
-      );
-      y += 33 * s;
-      y = richWrap(
-        ctx,
-        [
-          { text: 'NO EXCEPTIONS, INCLUDING', k: true },
+          { text: ' NO EXCEPTIONS, INCLUDING', k: true },
           { text: r.noExceptions },
           { text: ' THE PRICE', k: true },
           { text: r.price },
@@ -417,10 +402,10 @@ export async function exportContractDoc(state: LedgerState): Promise<void> {
         s,
         draw
       );
-      y += 22 * s;
+      y += 20 * s;
       if (i < c.current.rules.length - 1) {
         if (draw) rule(ctx, MX, W - MX, y, inkA(0.3));
-        y += 42 * s;
+        y += 40 * s;
       }
     });
     return y;
@@ -432,7 +417,7 @@ export async function exportContractDoc(state: LedgerState): Promise<void> {
 
   // signature ground
   rule(ctx, MX, W - MX, sigTop, inkA(0.4));
-  const sy = sigTop + 102;
+  const sy = sigTop + 92;
   ctx.fillStyle = INK;
   ctx.font = 'italic 460 52px Fraunces';
   ctx.fillText(c.current.signedName, 144, sy);
@@ -440,11 +425,12 @@ export async function exportContractDoc(state: LedgerState): Promise<void> {
   ctx.fillStyle = inkA(0.6);
   ctx.font = '400 23px ui-monospace, Menlo, monospace';
   track(ctx, 1.5);
-  ctx.fillText(`SIGNED ${longDate(new Date(c.current.signedAt))}`, 144, sy + 58);
+  ctx.fillText(`SIGNED ${longDate(new Date(c.current.signedAt))}`, 144, sy + 56);
   track(ctx, 0);
 
-  drawSeal(ctx, W - 236, sigTop + 96, 82);
+  drawSeal(ctx, W - 224, sigTop + 80, 70);
 
+  footer(ctx, false);
   download(ctx, `the-ledger-contract-v${c.current.version}.png`);
 }
 
@@ -461,30 +447,35 @@ export async function exportWeeklyCard(state: LedgerState, week: WeekSummary): P
   const monday = week.dayMarks[0]?.iso ?? week.fridayISO;
   masthead(ctx, true, 'THE WEEKLY LEDGER', weekRangeLabel(monday, week.fridayISO, true));
 
-  // hero: integrity
+  // hero: integrity — the system sets numerals in mono, here as everywhere
   ctx.fillStyle = PAPER;
-  ctx.font = '560 210px Fraunces';
+  ctx.font = '400 190px ui-monospace, Menlo, monospace';
   const integ = week.integrity != null ? week.integrity.toFixed(1) : '—';
-  ctx.fillText(integ, MX - 6, 442);
+  ctx.fillText(integ, MX - 6, 438);
   ctx.fillStyle = paperA(0.6);
   ctx.font = '500 28px Inter';
   track(ctx, 3.6);
   ctx.fillText('INTEGRITY / 100', MX, 506);
   track(ctx, 0);
 
-  // the week, as ledger ticks: kept, breached (wax, taller), or gap
+  // the week, as ledger ticks: one paper tick per kept day, one wax tick per
+  // breach (count them — the strip must agree with the table), gaps stay gaps
   const strip = { baseY: 628, gap: 100, x0: MX + 14 };
   const letters = ['M', 'T', 'W', 'T', 'F'];
   rule(ctx, MX, strip.x0 + strip.gap * 4 + 14, strip.baseY, paperA(0.45));
   week.dayMarks.forEach((m, i) => {
     const x = strip.x0 + strip.gap * i;
     if (m.logged) {
+      const n = m.breached ? Math.min(m.breachCount, 3) : 1;
       ctx.strokeStyle = m.breached ? WAX : PAPER;
-      ctx.lineWidth = m.breached ? 5 : 3.5;
-      ctx.beginPath();
-      ctx.moveTo(x, strip.baseY);
-      ctx.lineTo(x, strip.baseY - (m.breached ? 52 : 36));
-      ctx.stroke();
+      ctx.lineWidth = 3.5;
+      for (let t = 0; t < n; t++) {
+        const tx = x + (t - (n - 1) / 2) * 12;
+        ctx.beginPath();
+        ctx.moveTo(tx, strip.baseY);
+        ctx.lineTo(tx, strip.baseY - 36);
+        ctx.stroke();
+      }
     }
     ctx.fillStyle = paperA(0.45);
     ctx.font = '400 22px ui-monospace, Menlo, monospace';
